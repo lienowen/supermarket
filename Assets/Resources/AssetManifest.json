@@ -1,0 +1,28 @@
+{
+  "sprites": {
+    "products": [
+      "cola_box.png",
+      "water_box.png",
+      "milk_box.png",
+      "chips_box.png"
+    ],
+    "environment": [
+      "shelf.png",
+      "cart.png",
+      "warehouse.png",
+      "checkout.png"
+    ],
+    "characters": [
+      "player.png",
+      "customer.png",
+      "restocker.png",
+      "cashier.png"
+    ],
+    "ui": [
+      "coin.png",
+      "star.png",
+      "timer.png",
+      "mission_panel.png"
+    ]
+  }
+}
