@@ -12,14 +12,20 @@ public class Day01HUD : MonoBehaviour
     private GUIStyle smallStyle;
     private GUIStyle centerTitleStyle;
     private GUIStyle centerLabelStyle;
+
     private Texture2D panelTexture;
     private Texture2D accentTexture;
     private Texture2D progressBackTexture;
     private Texture2D progressFillTexture;
 
+    private Texture2D missionPanelArt;
+    private Texture2D coinArt;
+    private Texture2D playerPortraitArt;
+
     void Awake()
     {
         BuildStyles();
+        LoadDesignedArt();
     }
 
     void OnDestroy()
@@ -34,6 +40,9 @@ public class Day01HUD : MonoBehaviour
     {
         if (panelStyle == null)
             BuildStyles();
+
+        if (missionPanelArt == null && coinArt == null)
+            LoadDesignedArt();
 
         float scale = Mathf.Clamp(Screen.height / 900f, 0.75f, 1.25f);
         Matrix4x4 previous = GUI.matrix;
@@ -55,14 +64,49 @@ public class Day01HUD : MonoBehaviour
         GUI.Box(new Rect(24f, 20f, 150f, 42f), GUIContent.none, panelStyle);
         GUI.Label(new Rect(38f, 27f, 130f, 28f), "DAY 1", titleStyle);
 
+        if (playerPortraitArt != null)
+        {
+            GUI.Box(new Rect(184f, 20f, 42f, 42f), GUIContent.none, panelStyle);
+            GUI.DrawTexture(
+                new Rect(190f, 23f, 30f, 36f),
+                playerPortraitArt,
+                ScaleMode.ScaleToFit,
+                true
+            );
+        }
+
         int money = EconomySystem.Instance != null ? EconomySystem.Instance.money : 0;
         GUI.Box(new Rect(screenWidth - 190f, 20f, 166f, 42f), GUIContent.none, panelStyle);
-        GUI.Label(new Rect(screenWidth - 174f, 27f, 140f, 28f), "$ " + money, moneyStyle);
+
+        if (coinArt != null)
+        {
+            GUI.DrawTexture(
+                new Rect(screenWidth - 178f, 26f, 30f, 30f),
+                coinArt,
+                ScaleMode.ScaleToFit,
+                true
+            );
+            GUI.Label(new Rect(screenWidth - 146f, 27f, 110f, 28f), money.ToString(), moneyStyle);
+        }
+        else
+        {
+            GUI.Label(new Rect(screenWidth - 174f, 27f, 140f, 28f), "$ " + money, moneyStyle);
+        }
     }
 
     private void DrawMissionCard()
     {
-        GUI.Box(new Rect(24f, 78f, 340f, 126f), GUIContent.none, panelStyle);
+        Rect card = new Rect(24f, 78f, 340f, 126f);
+
+        if (missionPanelArt != null)
+        {
+            GUI.DrawTexture(card, missionPanelArt, ScaleMode.StretchToFill, true);
+        }
+        else
+        {
+            GUI.Box(card, GUIContent.none, panelStyle);
+        }
+
         GUI.Label(new Rect(42f, 92f, 290f, 28f), "MORNING SHIFT", titleStyle);
         GUI.Label(new Rect(42f, 124f, 290f, 24f), "Restock the drink shelf", labelStyle);
 
@@ -106,6 +150,18 @@ public class Day01HUD : MonoBehaviour
         int total = director != null ? director.totalCustomers : 0;
         GUI.Label(new Rect(x + 28f, 36f, bannerWidth - 50f, 28f), "STORE OPEN", centerTitleStyle);
         GUI.Label(new Rect(x + 28f, 68f, bannerWidth - 50f, 24f), "Checkout progress  " + served + "/" + total, centerLabelStyle);
+    }
+
+    private void LoadDesignedArt()
+    {
+        ArtRuntimeCatalog catalog = DesignedArtIntegration.Catalog;
+        if (catalog == null) return;
+
+        missionPanelArt = DesignedArtIntegration.GetTexture(catalog.missionPanel);
+        coinArt = DesignedArtIntegration.GetTexture(catalog.coinIcon);
+        playerPortraitArt = DesignedArtIntegration.GetTexture(
+            catalog.playerIdle != null ? catalog.playerIdle : catalog.player
+        );
     }
 
     private void BuildStyles()
