@@ -22,7 +22,7 @@ public static class ArtCatalogBuilder
     [MenuItem("Supermarket/Rebuild Art Catalog")]
     public static void RebuildCatalog()
     {
-        BuildCatalog(true);
+        BuildCatalog(true, true);
     }
 
     private static void EnsureCatalog()
@@ -36,10 +36,11 @@ public static class ArtCatalogBuilder
             return;
         }
 
-        BuildCatalog(false);
+        if (AssetDatabase.LoadAssetAtPath<ArtRuntimeCatalog>(CatalogPath) == null)
+            BuildCatalog(false, false);
     }
 
-    private static void BuildCatalog(bool forceLog)
+    private static void BuildCatalog(bool forceLog, bool fixImportSettings)
     {
         EnsureFolder("Assets", "Resources");
         EnsureFolder(ResourceFolder, "Generated");
@@ -53,10 +54,13 @@ public static class ArtCatalogBuilder
             if (string.IsNullOrEmpty(path)) continue;
 
             texturePaths.Add(path);
-            EnsureSpriteImport(path);
+
+            if (fixImportSettings)
+                EnsureSpriteImport(path);
         }
 
-        AssetDatabase.Refresh();
+        if (fixImportSettings)
+            AssetDatabase.Refresh();
 
         ArtRuntimeCatalog catalog = AssetDatabase.LoadAssetAtPath<ArtRuntimeCatalog>(CatalogPath);
         if (catalog == null)
