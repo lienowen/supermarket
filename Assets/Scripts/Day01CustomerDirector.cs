@@ -9,11 +9,23 @@ public class Day01CustomerDirector : MonoBehaviour
 
     private int spawned;
     private float timer;
+    private bool waveFinished;
 
     void Update()
     {
-        if (mission == null || !mission.completed) return;
-        if (spawner == null || spawned >= totalCustomers) return;
+        if (mission == null || spawner == null) return;
+
+        if (mission.completed && !waveFinished && spawned >= totalCustomers && spawner.CurrentCustomers == 0)
+        {
+            waveFinished = true;
+
+            if (GameStateManager.Instance != null)
+                GameStateManager.Instance.CompleteGame();
+
+            return;
+        }
+
+        if (!mission.completed || spawned >= totalCustomers) return;
 
         timer += Time.deltaTime;
         if (timer < Mathf.Max(0.5f, spawnInterval)) return;
@@ -27,5 +39,16 @@ public class Day01CustomerDirector : MonoBehaviour
     public int GetRemainingCustomers()
     {
         return Mathf.Max(0, totalCustomers - spawned);
+    }
+
+    public int GetCompletedCustomers()
+    {
+        if (spawner == null) return 0;
+        return Mathf.Max(0, spawned - spawner.CurrentCustomers);
+    }
+
+    public bool IsWaveFinished()
+    {
+        return waveFinished;
     }
 }

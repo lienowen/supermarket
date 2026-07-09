@@ -3,6 +3,7 @@ using UnityEngine;
 public class Day01HUD : MonoBehaviour
 {
     public MissionSystem mission;
+    public Day01CustomerDirector director;
 
     void OnGUI()
     {
@@ -17,8 +18,19 @@ public class Day01HUD : MonoBehaviour
 
         if (mission != null && mission.completed)
         {
-            GUI.Box(new Rect(Screen.width * 0.5f - 160, 30, 320, 80), "MISSION COMPLETE");
-            GUI.Label(new Rect(Screen.width * 0.5f - 125, 65, 280, 24), "Customers are now shopping!");
+            if (director != null && director.IsWaveFinished())
+            {
+                GUI.Box(new Rect(Screen.width * 0.5f - 160, 30, 320, 80), "DAY COMPLETE");
+                GUI.Label(new Rect(Screen.width * 0.5f - 125, 65, 280, 24), "All customers have checked out.");
+                return;
+            }
+
+            int served = director != null ? director.GetCompletedCustomers() : 0;
+            int total = director != null ? director.totalCustomers : 0;
+
+            GUI.Box(new Rect(Screen.width * 0.5f - 180, 30, 360, 90), "MISSION COMPLETE");
+            GUI.Label(new Rect(Screen.width * 0.5f - 145, 62, 300, 24), "Restock reward received. Customers are shopping!");
+            GUI.Label(new Rect(Screen.width * 0.5f - 145, 86, 300, 24), "Checkout progress: " + served + "/" + total);
         }
     }
 }

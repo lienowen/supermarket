@@ -19,6 +19,9 @@ public class InteractionSystem : MonoBehaviour
 
         foreach (Collider hit in hits)
         {
+            if (hit == null || hit.transform.IsChildOf(transform))
+                continue;
+
             IInteractable target = hit.GetComponent<IInteractable>();
             if (target == null)
                 target = hit.GetComponentInParent<IInteractable>();

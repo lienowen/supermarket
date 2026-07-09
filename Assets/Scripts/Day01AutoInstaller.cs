@@ -23,6 +23,7 @@ public static class Day01AutoInstaller
 
         MissionSystem mission = systems.AddComponent<MissionSystem>();
         mission.targetAmount = 10;
+        mission.reward = 200;
 
         GameStateManager state = systems.AddComponent<GameStateManager>();
         systems.AddComponent<ProductDatabase>();
@@ -117,6 +118,7 @@ public static class Day01AutoInstaller
 
         Day01HUD hud = systems.AddComponent<Day01HUD>();
         hud.mission = mission;
+        hud.director = director;
 
         Debug.Log("Day01AutoInstaller: playable Day01 with customer checkout flow generated successfully.");
     }
