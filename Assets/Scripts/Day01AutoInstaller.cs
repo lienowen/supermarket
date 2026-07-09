@@ -140,6 +140,7 @@ public static class Day01AutoInstaller
         Day01SaleFeedback saleFeedback = systems.AddComponent<Day01SaleFeedback>();
         saleFeedback.gameplayCamera = gameplayCamera;
         saleFeedback.checkoutAnchor = checkout.transform;
+        saleFeedback.presentation = presentation;
 
         Debug.Log("Day01AutoInstaller: coherent screen-space management presentation active.");
     }
