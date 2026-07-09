@@ -8,10 +8,13 @@ public static class Day01StaticStageBuilder
 {
     public static Day01EnvironmentLayout Build()
     {
+        CleanupOldRuntimeWorld();
+
         GameObject root = new GameObject("Day01StaticStage");
 
         CreateFloor(root.transform);
         CreateZonePanels(root.transform);
+        CreateBackdrop(root.transform);
         CreateDesignedDecorations(root.transform);
 
         return new Day01EnvironmentLayout
@@ -28,6 +31,24 @@ public static class Day01StaticStageBuilder
         };
     }
 
+    static void CleanupOldRuntimeWorld()
+    {
+        DestroyNamed("Environment");
+        DestroyNamed("DesignedDay01Decorations");
+        DestroyNamed("Day01StaticStage");
+
+        PlayerController oldPlayer = Object.FindObjectOfType<PlayerController>();
+        if (oldPlayer != null)
+            Object.Destroy(oldPlayer.gameObject);
+    }
+
+    static void DestroyNamed(string name)
+    {
+        GameObject obj = GameObject.Find(name);
+        if (obj != null)
+            Object.Destroy(obj);
+    }
+
     static void CreateFloor(Transform parent)
     {
         GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -35,18 +56,7 @@ public static class Day01StaticStageBuilder
         floor.transform.SetParent(parent, false);
         floor.transform.position = new Vector3(0f, -0.18f, 0.7f);
         floor.transform.localScale = new Vector3(23.5f, 0.28f, 17.2f);
-
-        Renderer renderer = floor.GetComponent<Renderer>();
-        if (renderer != null)
-        {
-            Shader shader = Shader.Find("Standard");
-            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) shader = Shader.Find("Sprites/Default");
-
-            Material material = new Material(shader);
-            material.color = new Color(0.70f, 0.72f, 0.72f);
-            renderer.sharedMaterial = material;
-        }
+        ApplyColor(floor, new Color(0.70f, 0.72f, 0.72f));
     }
 
     static void CreateZonePanels(Transform parent)
@@ -76,6 +86,25 @@ public static class Day01StaticStageBuilder
         );
     }
 
+    static void CreateBackdrop(Transform parent)
+    {
+        CreatePanel(
+            "BackWall",
+            parent,
+            new Vector3(0f, 2.6f, -7.55f),
+            new Vector3(23.5f, 5.2f, 0.25f),
+            new Color(0.76f, 0.74f, 0.70f)
+        );
+
+        CreatePanel(
+            "WarehouseDivider",
+            parent,
+            new Vector3(-1.8f, 1.9f, -2.2f),
+            new Vector3(0.2f, 3.8f, 10.6f),
+            new Color(0.16f, 0.19f, 0.22f)
+        );
+    }
+
     static void CreatePanel(string name, Transform parent, Vector3 position, Vector3 scale, Color color)
     {
         GameObject panel = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -83,22 +112,26 @@ public static class Day01StaticStageBuilder
         panel.transform.SetParent(parent, false);
         panel.transform.position = position;
         panel.transform.localScale = scale;
-
-        Renderer renderer = panel.GetComponent<Renderer>();
-        if (renderer != null)
-        {
-            Shader shader = Shader.Find("Standard");
-            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) shader = Shader.Find("Sprites/Default");
-
-            Material material = new Material(shader);
-            material.color = color;
-            renderer.sharedMaterial = material;
-        }
+        ApplyColor(panel, color);
 
         Collider collider = panel.GetComponent<Collider>();
         if (collider != null)
             Object.Destroy(collider);
+    }
+
+    static void ApplyColor(GameObject target, Color color)
+    {
+        Renderer renderer = target.GetComponent<Renderer>();
+        if (renderer == null) return;
+
+        Shader shader = Shader.Find("Standard");
+        if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
+        if (shader == null) shader = Shader.Find("Sprites/Default");
+        if (shader == null) return;
+
+        Material material = new Material(shader);
+        material.color = color;
+        renderer.sharedMaterial = material;
     }
 
     static void CreateDesignedDecorations(Transform parent)
