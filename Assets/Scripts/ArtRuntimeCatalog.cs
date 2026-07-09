@@ -5,17 +5,35 @@ public class ArtRuntimeCatalog : ScriptableObject
 {
     [Header("Characters")]
     public Sprite player;
+    public Sprite playerIdle;
+    public Sprite playerCarry;
     public Sprite[] customers;
 
-    [Header("Gameplay Objects")]
+    [Header("Products")]
     public Sprite drinkBox;
+    public Sprite colaBox;
+    public Sprite waterBox;
+    public Sprite milkBox;
+    public Sprite chipsBox;
+
+    [Header("Gameplay Objects")]
     public Sprite shoppingCart;
     public Sprite drinkShelf;
     public Sprite checkoutCounter;
 
     [Header("Environment")]
     public Sprite warehouseWall;
+    public Sprite wall;
     public Sprite floor;
+
+    [Header("UI")]
+    public Sprite missionPanel;
+    public Sprite coinIcon;
+    public Sprite starIcon;
+    public Sprite timerIcon;
+    public Sprite buttonPlay;
+    public Sprite buttonUpgrade;
+    public Sprite buttonNext;
 
     public Sprite GetCustomer(int index)
     {
@@ -24,5 +42,22 @@ public class ArtRuntimeCatalog : ScriptableObject
 
         int safeIndex = Mathf.Abs(index) % customers.Length;
         return customers[safeIndex];
+    }
+
+    public Sprite GetProduct(string productId)
+    {
+        switch (productId)
+        {
+            case "cola_box":
+                return colaBox != null ? colaBox : drinkBox;
+            case "water_box":
+                return waterBox;
+            case "milk_box":
+                return milkBox;
+            case "chips_box":
+                return chipsBox;
+            default:
+                return drinkBox;
+        }
     }
 }
