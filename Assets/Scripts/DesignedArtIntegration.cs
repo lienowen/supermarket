@@ -26,8 +26,10 @@ public static class DesignedArtIntegration
         ArtRuntimeCatalog catalog = Catalog;
         return catalog != null &&
                (catalog.colaBox != null ||
-                catalog.missionPanel != null ||
-                catalog.playerIdle != null);
+                catalog.coinIcon != null ||
+                catalog.playerIdle != null ||
+                catalog.drinkShelf != null ||
+                catalog.checkoutCounter != null);
     }
 
     public static string GetBindingSummary()
@@ -44,39 +46,50 @@ public static class DesignedArtIntegration
             "shelf=" + NameOf(catalog.drinkShelf) + ", " +
             "checkout=" + NameOf(catalog.checkoutCounter) + ", " +
             "mission=" + NameOf(catalog.missionPanel) + ", " +
-            "coin=" + NameOf(catalog.coinIcon);
+            "coin=" + NameOf(catalog.coinIcon) + ", " +
+            "floorTexture=" + NameOf(catalog.floor) + ", " +
+            "wallTexture=" + NameOf(catalog.wall);
     }
 
     public static void ApplyEnvironment(Transform environmentRoot)
     {
         if (environmentRoot == null || Catalog == null) return;
 
-        ApplyTextureMaterial(
-            FindDeep(environmentRoot, "MainFloor"),
-            Catalog.floor,
-            new Color(0.88f, 0.88f, 0.88f),
-            new Vector2(5f, 4f)
-        );
+        // Only dedicated seamless texture slots are accepted here.
+        // Concept renders, sale posters, wet-floor signs and object illustrations are never
+        // allowed to tile across the supermarket floor or walls.
+        if (Catalog.floor != null)
+        {
+            ApplyTextureMaterial(
+                FindDeep(environmentRoot, "MainFloor"),
+                Catalog.floor,
+                new Color(0.88f, 0.88f, 0.88f),
+                new Vector2(5f, 4f)
+            );
+        }
 
-        Sprite wallSprite = Catalog.wall != null ? Catalog.wall : Catalog.warehouseWall;
-        ApplyTextureMaterial(
-            FindDeep(environmentRoot, "BackWall"),
-            wallSprite,
-            new Color(0.86f, 0.86f, 0.86f),
-            new Vector2(4f, 1f)
-        );
-        ApplyTextureMaterial(
-            FindDeep(environmentRoot, "LeftWall"),
-            wallSprite,
-            new Color(0.86f, 0.86f, 0.86f),
-            new Vector2(3f, 1f)
-        );
-        ApplyTextureMaterial(
-            FindDeep(environmentRoot, "RightWall"),
-            wallSprite,
-            new Color(0.86f, 0.86f, 0.86f),
-            new Vector2(3f, 1f)
-        );
+        Sprite wallTexture = Catalog.wall != null ? Catalog.wall : Catalog.warehouseWall;
+        if (wallTexture != null)
+        {
+            ApplyTextureMaterial(
+                FindDeep(environmentRoot, "BackWall"),
+                wallTexture,
+                new Color(0.86f, 0.86f, 0.86f),
+                new Vector2(4f, 1f)
+            );
+            ApplyTextureMaterial(
+                FindDeep(environmentRoot, "LeftWall"),
+                wallTexture,
+                new Color(0.86f, 0.86f, 0.86f),
+                new Vector2(3f, 1f)
+            );
+            ApplyTextureMaterial(
+                FindDeep(environmentRoot, "RightWall"),
+                wallTexture,
+                new Color(0.86f, 0.86f, 0.86f),
+                new Vector2(3f, 1f)
+            );
+        }
     }
 
     public static void ApplyProduct(GameObject target, string productId)
@@ -88,73 +101,35 @@ public static class DesignedArtIntegration
 
         Transform root = PrepareRoot(target);
 
+        // Product art is allowed only as a small front label on an existing 3D crate.
+        // It is not used as the crate geometry itself and is not repeated over the scene.
         CreateDecal(
             root,
             "ProductFrontArt",
             sprite,
             new Vector3(0f, 0.34f, 0.377f),
             Quaternion.identity,
-            0.62f,
+            0.5f,
             12
-        );
-
-        CreateDecal(
-            root,
-            "ProductSideArt",
-            sprite,
-            new Vector3(0.437f, 0.34f, 0f),
-            Quaternion.Euler(0f, 90f, 0f),
-            0.42f,
-            11
         );
     }
 
     public static void ApplyCart(GameObject target)
     {
-        if (target == null || Catalog == null || Catalog.shoppingCart == null) return;
-
-        Transform root = PrepareRoot(target);
-        CreateDecal(
-            root,
-            "CartDesignBadge",
-            Catalog.shoppingCart,
-            new Vector3(0f, 1.16f, 0.485f),
-            Quaternion.identity,
-            0.5f,
-            10
-        );
+        // shopping_cart.png is a rendered object illustration, not a texture map.
+        // Keep the 3D cart mesh clean. The sprite remains available for UI/catalog use.
     }
 
     public static void ApplyShelf(GameObject target)
     {
-        if (target == null || Catalog == null || Catalog.drinkShelf == null) return;
-
-        Transform root = PrepareRoot(target);
-        CreateDecal(
-            root,
-            "ShelfDesignedHeader",
-            Catalog.drinkShelf,
-            new Vector3(0f, 3.03f, 0.105f),
-            Quaternion.identity,
-            1.45f,
-            10
-        );
+        // shelf_drinks.png is a design reference render, not a world-space texture.
+        // The procedural 3D shelf already follows its color/layout direction.
     }
 
     public static void ApplyCheckout(GameObject target)
     {
-        if (target == null || Catalog == null || Catalog.checkoutCounter == null) return;
-
-        Transform root = PrepareRoot(target);
-        CreateDecal(
-            root,
-            "CheckoutDesignedPanel",
-            Catalog.checkoutCounter,
-            new Vector3(0f, 0.56f, 0.475f),
-            Quaternion.identity,
-            0.72f,
-            10
-        );
+        // checkout_counter.png is a design reference render, not a texture map.
+        // Keep the 3D checkout geometry and use this art in future shop/catalog UI.
     }
 
     public static Texture2D GetTexture(Sprite sprite)
