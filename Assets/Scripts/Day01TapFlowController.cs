@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Fixed-camera Day01 flow: tap boxes, load the cart, move it to the shelf,
-/// restock, then open the store. Uses the existing mission/economy systems.
+/// Fixed-camera Day01 flow. Screen-space hit areas come from Day01ScreenPresentation,
+/// while the existing cart/shelf/mission systems remain the source of truth.
 /// </summary>
 public class Day01TapFlowController : MonoBehaviour
 {
@@ -10,6 +10,7 @@ public class Day01TapFlowController : MonoBehaviour
     public CartSystem cart;
     public ShelfSystem shelf;
     public MissionSystem mission;
+    public Day01ScreenPresentation presentation;
 
     [Header("Flow")]
     public int boxesRequiredBeforeMove = 6;
@@ -24,6 +25,7 @@ public class Day01TapFlowController : MonoBehaviour
     private ProductBox selectedBox;
     private Vector3 selectedOriginalScale;
     private Vector3 cartTarget;
+    private Vector3 cartMoveStart;
     private bool movingCart;
     private bool cartAtShelf;
 
@@ -41,6 +43,23 @@ public class Day01TapFlowController : MonoBehaviour
         RestockShelf
     }
 
+    public ProductBox SelectedBox => selectedBox;
+    public ProductBox FlyingBox => flyingBox;
+    public bool IsMovingCart => movingCart;
+    public bool CartAtShelf => cartAtShelf;
+
+    public float CartVisualProgress
+    {
+        get
+        {
+            if (cartAtShelf) return 1f;
+            if (!movingCart || cart == null) return 0f;
+            float total = Vector3.Distance(cartMoveStart, cartTarget);
+            if (total <= 0.001f) return 1f;
+            return 1f - Mathf.Clamp01(Vector3.Distance(cart.transform.position, cartTarget) / total);
+        }
+    }
+
     public string CurrentHint
     {
         get
@@ -53,7 +72,7 @@ public class Day01TapFlowController : MonoBehaviour
                 return "Moving cart to the sales floor";
             if (cartAtShelf)
                 return cart != null && cart.GetCount() > 0
-                    ? "Tap the drink shelf to restock"
+                    ? "Tap a missing shelf slot to restock"
                     : "Shelf stocked • opening store";
             if (selectedBox != null)
                 return "Tap the cart to load the selected box";
@@ -83,19 +102,44 @@ public class Day01TapFlowController : MonoBehaviour
             HandleTap(screenPosition);
     }
 
+    public bool IsBoxInTransit(ProductBox box)
+    {
+        return box != null && flyingBox == box;
+    }
+
     void HandleTap(Vector2 screenPosition)
     {
-        if (gameplayCamera == null)
-            return;
-
-        Ray ray = gameplayCamera.ScreenPointToRay(screenPosition);
-        if (!Physics.Raycast(ray, out RaycastHit hit, 200f))
-            return;
-
-        ProductBox box = hit.collider.GetComponentInParent<ProductBox>();
-        if (box != null)
+        if (presentation != null)
         {
-            SelectBox(box);
+            if (presentation.TryGetBoxIndexAt(screenPosition, out int boxIndex))
+            {
+                ProductBox box = presentation.GetBoxByIndex(boxIndex);
+                if (box != null) SelectBox(box);
+                return;
+            }
+
+            if (presentation.HitCart(screenPosition))
+            {
+                HandleCartTap(cart);
+                return;
+            }
+
+            if (presentation.HitShelf(screenPosition))
+            {
+                HandleShelfTap(shelf);
+                return;
+            }
+        }
+
+        // Fallback for editor scenes that do not attach the screen presentation.
+        if (gameplayCamera == null) return;
+        Ray ray = gameplayCamera.ScreenPointToRay(screenPosition);
+        if (!Physics.Raycast(ray, out RaycastHit hit, 200f)) return;
+
+        ProductBox worldBox = hit.collider.GetComponentInParent<ProductBox>();
+        if (worldBox != null)
+        {
+            SelectBox(worldBox);
             return;
         }
 
@@ -117,7 +161,6 @@ public class Day01TapFlowController : MonoBehaviour
             return;
 
         ClearSelectionVisual();
-
         selectedBox = box;
         selectedOriginalScale = box.transform.localScale;
         box.transform.localScale = selectedOriginalScale * selectedScale;
@@ -125,8 +168,7 @@ public class Day01TapFlowController : MonoBehaviour
 
     void HandleCartTap(CartSystem tappedCart)
     {
-        if (tappedCart == null || tappedCart != cart)
-            return;
+        if (tappedCart == null || tappedCart != cart) return;
 
         if (selectedBox != null)
         {
@@ -136,12 +178,10 @@ public class Day01TapFlowController : MonoBehaviour
             return;
         }
 
-        if (cartAtShelf || shelf == null)
-            return;
+        if (cartAtShelf || shelf == null) return;
+        if (cart.GetCount() < boxesRequiredBeforeMove) return;
 
-        if (cart.GetCount() < boxesRequiredBeforeMove)
-            return;
-
+        cartMoveStart = cart.transform.position;
         cartTarget = shelf.transform.position + cartShelfOffset;
         cartTarget.y = cart.transform.position.y;
         movingCart = true;
@@ -149,12 +189,10 @@ public class Day01TapFlowController : MonoBehaviour
 
     void HandleShelfTap(ShelfSystem tappedShelf)
     {
-        if (tappedShelf == null || tappedShelf != shelf || !cartAtShelf || cart == null)
-            return;
+        if (tappedShelf == null || tappedShelf != shelf || !cartAtShelf || cart == null) return;
 
         ProductBox product = cart.RemoveOneProduct();
-        if (product == null)
-            return;
+        if (product == null) return;
 
         product.gameObject.SetActive(true);
         BeginFly(product, GetShelfDropPoint(), FlyAction.RestockShelf);
@@ -172,16 +210,13 @@ public class Day01TapFlowController : MonoBehaviour
         flyTimer = 0f;
 
         box.transform.SetParent(null, true);
-
         Collider collider = box.GetComponent<Collider>();
-        if (collider != null)
-            collider.enabled = false;
+        if (collider != null) collider.enabled = false;
     }
 
     void UpdateFlyingBox()
     {
-        if (flyingBox == null)
-            return;
+        if (flyingBox == null) return;
 
         float duration = Mathf.Max(0.05f, itemFlyDuration);
         flyTimer += Time.deltaTime / duration;
@@ -191,18 +226,14 @@ public class Day01TapFlowController : MonoBehaviour
         Vector3 position = Vector3.Lerp(flyStart, flyEnd, eased);
         position.y += Mathf.Sin(t * Mathf.PI) * itemFlyArc;
         flyingBox.transform.position = position;
+        flyingBox.transform.localScale = flyStartScale * (1f + Mathf.Sin(t * Mathf.PI) * 0.12f);
 
-        float pulse = 1f + Mathf.Sin(t * Mathf.PI) * 0.12f;
-        flyingBox.transform.localScale = flyStartScale * pulse;
-
-        if (t < 1f)
-            return;
+        if (t < 1f) return;
 
         ProductBox completed = flyingBox;
         FlyAction completedAction = flyAction;
         flyingBox = null;
         flyAction = FlyAction.None;
-
         completed.transform.position = flyEnd;
         completed.transform.localScale = flyStartScale;
 
@@ -222,15 +253,9 @@ public class Day01TapFlowController : MonoBehaviour
 
     void UpdateCartMovement()
     {
-        if (!movingCart || cart == null)
-            return;
+        if (!movingCart || cart == null) return;
 
-        cart.transform.position = Vector3.MoveTowards(
-            cart.transform.position,
-            cartTarget,
-            cartMoveSpeed * Time.deltaTime
-        );
-
+        cart.transform.position = Vector3.MoveTowards(cart.transform.position, cartTarget, cartMoveSpeed * Time.deltaTime);
         if ((cart.transform.position - cartTarget).sqrMagnitude <= 0.01f)
         {
             cart.transform.position = cartTarget;
@@ -259,7 +284,6 @@ public class Day01TapFlowController : MonoBehaviour
     {
         if (selectedBox != null)
             selectedBox.transform.localScale = selectedOriginalScale;
-
         selectedBox = null;
     }
 
