@@ -105,14 +105,11 @@ public class Day01TapFlowController : MonoBehaviour
         if (selectedBox != null)
         {
             ProductBox box = selectedBox;
-            ClearSelectionVisual(false);
+            ClearSelectionVisual();
 
             if (!cart.AddProduct(box))
-            {
-                selectedBox = box;
-                selectedOriginalScale = box.transform.localScale;
-                box.transform.localScale = selectedOriginalScale * 1.08f;
-            }
+                SelectBox(box);
+
             return;
         }
 
@@ -153,13 +150,12 @@ public class Day01TapFlowController : MonoBehaviour
         }
     }
 
-    void ClearSelectionVisual(bool clearReference = true)
+    void ClearSelectionVisual()
     {
         if (selectedBox != null)
             selectedBox.transform.localScale = selectedOriginalScale;
 
-        if (clearReference)
-            selectedBox = null;
+        selectedBox = null;
     }
 
     bool TryGetPointerDown(out Vector2 screenPosition)
