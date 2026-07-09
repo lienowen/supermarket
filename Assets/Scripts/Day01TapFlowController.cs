@@ -47,6 +47,8 @@ public class Day01TapFlowController : MonoBehaviour
     public ProductBox FlyingBox => flyingBox;
     public bool IsMovingCart => movingCart;
     public bool CartAtShelf => cartAtShelf;
+    public float FlyingVisualProgress => flyingBox != null ? Mathf.Clamp01(flyTimer) : 0f;
+    public bool FlyingToCart => flyingBox != null && flyAction == FlyAction.LoadCart;
 
     public float CartVisualProgress
     {
@@ -131,7 +133,6 @@ public class Day01TapFlowController : MonoBehaviour
             }
         }
 
-        // Fallback for editor scenes that do not attach the screen presentation.
         if (gameplayCamera == null) return;
         Ray ray = gameplayCamera.ScreenPointToRay(screenPosition);
         if (!Physics.Raycast(ray, out RaycastHit hit, 200f)) return;
