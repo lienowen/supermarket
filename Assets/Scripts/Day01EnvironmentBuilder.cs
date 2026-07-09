@@ -25,6 +25,7 @@ public static class Day01EnvironmentBuilder
     private static Material yellow;
     private static Material dark;
     private static Material glass;
+    private static Material lightPanel;
 
     public static Day01EnvironmentLayout Build()
     {
@@ -43,13 +44,14 @@ public static class Day01EnvironmentBuilder
 
         Box("WarehouseDivider", root.transform, new Vector3(-2.15f, 1.8f, -3.6f), new Vector3(0.25f, 3.6f, 8.3f), wallAccent, true);
         Box("WarehouseHeader", root.transform, new Vector3(-6.6f, 3.35f, 2.9f), new Vector3(7.9f, 0.5f, 0.35f), dark, false);
-        Label("STOCK ROOM", root.transform, new Vector3(-6.6f, 3.38f, 3.1f), 0.32f, Color.white);
 
         BuildEntrance(root.transform);
         BuildFridgeBank(root.transform);
         BuildDecorAisle(root.transform);
         BuildProduceIsland(root.transform);
         BuildCeilingLights(root.transform);
+
+        DesignedArtIntegration.ApplyEnvironment(root.transform);
 
         return new Day01EnvironmentLayout
         {
@@ -71,7 +73,8 @@ public static class Day01EnvironmentBuilder
         Box("EntranceRight", parent, new Vector3(-5.8f, 1.5f, 8.15f), new Vector3(2.1f, 3f, 0.35f), wallAccent, true);
         Box("EntranceTop", parent, new Vector3(-8.1f, 3.25f, 8.15f), new Vector3(6.7f, 0.5f, 0.35f), blue, true);
         Box("DoorGlass", parent, new Vector3(-8.1f, 1.5f, 8.1f), new Vector3(2.4f, 3f, 0.08f), glass, false);
-        Label("FRESH MARKET", parent, new Vector3(-8.1f, 3.28f, 8.38f), 0.36f, Color.white);
+
+        Box("EntranceSign", parent, new Vector3(-8.1f, 3.28f, 8.38f), new Vector3(3.8f, 0.28f, 0.08f), dark, false);
     }
 
     private static void BuildFridgeBank(Transform parent)
@@ -81,10 +84,10 @@ public static class Day01EnvironmentBuilder
             float z = -5.7f + i * 2.25f;
             Box("FridgeBody_" + i, parent, new Vector3(10.65f, 1.35f, z), new Vector3(1.2f, 2.7f, 2f), dark, true);
             Box("FridgeDoor_" + i, parent, new Vector3(10.02f, 1.38f, z), new Vector3(0.05f, 2.35f, 1.75f), glass, false);
-            Box("FridgeLight_" + i, parent, new Vector3(9.96f, 2.47f, z), new Vector3(0.06f, 0.08f, 1.6f), blue, false);
+            Box("FridgeLight_" + i, parent, new Vector3(9.96f, 2.47f, z), new Vector3(0.06f, 0.06f, 1.55f), blue, false);
         }
 
-        Label("COLD DRINKS", parent, new Vector3(10.0f, 3.25f, -2.2f), 0.28f, new Color(0.08f, 0.32f, 0.62f));
+        Box("ColdDrinksSign", parent, new Vector3(10.0f, 3.2f, -2.2f), new Vector3(0.12f, 0.42f, 3.4f), blue, false);
     }
 
     private static void BuildDecorAisle(Transform parent)
@@ -124,9 +127,11 @@ public static class Day01EnvironmentBuilder
                 fruit.transform.SetParent(parent, false);
                 fruit.transform.position = new Vector3(7.3f + x * 0.48f, 1.28f, -3.6f + z * 0.52f);
                 fruit.transform.localScale = Vector3.one * 0.3f;
+
                 Renderer renderer = fruit.GetComponent<Renderer>();
                 if (renderer != null)
                     renderer.sharedMaterial = (x + z) % 2 == 0 ? yellow : green;
+
                 Collider collider = fruit.GetComponent<Collider>();
                 if (collider != null)
                     Object.Destroy(collider);
@@ -141,7 +146,7 @@ public static class Day01EnvironmentBuilder
             for (int z = -1; z <= 1; z++)
             {
                 Vector3 position = new Vector3(x * 6.5f, 4.25f, 0.5f + z * 5.2f);
-                Box("CeilingPanel", parent, position, new Vector3(2.7f, 0.08f, 0.5f), white: null, material: null, addCollider: false);
+                Box("CeilingPanel", parent, position, new Vector3(2.7f, 0.06f, 0.5f), lightPanel, false);
             }
         }
     }
@@ -149,27 +154,28 @@ public static class Day01EnvironmentBuilder
     private static void ConfigureLighting()
     {
         RenderSettings.ambientMode = AmbientMode.Flat;
-        RenderSettings.ambientLight = new Color(0.64f, 0.68f, 0.74f);
+        RenderSettings.ambientLight = new Color(0.38f, 0.41f, 0.45f);
         RenderSettings.fog = false;
 
         Light directional = Object.FindObjectOfType<Light>();
         if (directional != null)
         {
             directional.type = LightType.Directional;
-            directional.intensity = 0.75f;
-            directional.color = new Color(1f, 0.96f, 0.9f);
+            directional.intensity = 0.55f;
+            directional.color = new Color(1f, 0.95f, 0.88f);
             directional.shadows = LightShadows.Soft;
             directional.transform.rotation = Quaternion.Euler(50f, -35f, 0f);
         }
 
-        CreatePointLight("WarmFill", new Vector3(0f, 4f, 1f), new Color(1f, 0.86f, 0.68f), 1.1f, 12f);
-        CreatePointLight("CheckoutFill", new Vector3(6.5f, 3.5f, 4f), new Color(1f, 0.9f, 0.72f), 0.9f, 8f);
+        CreatePointLight("WarmFill", new Vector3(0f, 4f, 1f), new Color(1f, 0.84f, 0.68f), 0.32f, 11f);
+        CreatePointLight("CheckoutFill", new Vector3(6.5f, 3.5f, 4f), new Color(1f, 0.88f, 0.7f), 0.25f, 7f);
     }
 
     private static void CreatePointLight(string name, Vector3 position, Color color, float intensity, float range)
     {
         GameObject obj = new GameObject(name);
         obj.transform.position = position;
+
         Light light = obj.AddComponent<Light>();
         light.type = LightType.Point;
         light.color = color;
@@ -207,59 +213,20 @@ public static class Day01EnvironmentBuilder
         return obj;
     }
 
-    private static GameObject Box(
-        string name,
-        Transform parent,
-        Vector3 position,
-        Vector3 scale,
-        Material white,
-        Material material,
-        bool addCollider)
-    {
-        return Box(name, parent, position, scale, material ?? GetLightPanelMaterial(), addCollider);
-    }
-
-    private static void Label(string text, Transform parent, Vector3 position, float characterSize, Color color)
-    {
-        GameObject obj = new GameObject("Label_" + text.Replace(" ", "_"));
-        obj.transform.SetParent(parent, true);
-        obj.transform.position = position;
-        obj.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
-
-        TextMesh mesh = obj.AddComponent<TextMesh>();
-        mesh.text = text;
-        mesh.characterSize = characterSize;
-        mesh.anchor = TextAnchor.MiddleCenter;
-        mesh.alignment = TextAlignment.Center;
-        mesh.color = color;
-        mesh.fontSize = 48;
-        mesh.fontStyle = FontStyle.Bold;
-    }
-
     private static void EnsureMaterials()
     {
         if (floorLight != null) return;
 
-        floorLight = Mat(new Color(0.83f, 0.86f, 0.88f), 0.12f);
-        floorWarehouse = Mat(new Color(0.38f, 0.44f, 0.5f), 0.05f);
-        wallWarm = Mat(new Color(0.9f, 0.87f, 0.82f), 0.08f);
-        wallAccent = Mat(new Color(0.7f, 0.78f, 0.82f), 0.08f);
-        blue = Mat(new Color(0.08f, 0.42f, 0.78f), 0.3f);
-        green = Mat(new Color(0.16f, 0.58f, 0.3f), 0.18f);
-        yellow = Mat(new Color(0.95f, 0.7f, 0.18f), 0.18f);
-        dark = Mat(new Color(0.13f, 0.17f, 0.21f), 0.45f);
-        glass = Mat(new Color(0.42f, 0.72f, 0.86f), 0.55f);
-    }
-
-    private static Material GetLightPanelMaterial()
-    {
-        Material material = Mat(new Color(1f, 0.96f, 0.82f), 0.2f);
-        if (material.HasProperty("_EmissionColor"))
-        {
-            material.EnableKeyword("_EMISSION");
-            material.SetColor("_EmissionColor", new Color(0.5f, 0.42f, 0.25f));
-        }
-        return material;
+        floorLight = Mat(new Color(0.68f, 0.72f, 0.75f), 0.1f);
+        floorWarehouse = Mat(new Color(0.31f, 0.36f, 0.42f), 0.04f);
+        wallWarm = Mat(new Color(0.78f, 0.76f, 0.72f), 0.06f);
+        wallAccent = Mat(new Color(0.57f, 0.64f, 0.69f), 0.06f);
+        blue = Mat(new Color(0.07f, 0.34f, 0.65f), 0.25f);
+        green = Mat(new Color(0.12f, 0.49f, 0.24f), 0.14f);
+        yellow = Mat(new Color(0.82f, 0.58f, 0.12f), 0.14f);
+        dark = Mat(new Color(0.11f, 0.14f, 0.18f), 0.38f);
+        glass = Mat(new Color(0.32f, 0.58f, 0.7f), 0.45f);
+        lightPanel = Mat(new Color(0.92f, 0.9f, 0.78f), 0.12f);
     }
 
     private static Material Mat(Color color, float smoothness)
@@ -271,8 +238,11 @@ public static class Day01EnvironmentBuilder
         Material material = new Material(shader);
         material.color = color;
 
-        if (material.HasProperty("_Glossiness")) material.SetFloat("_Glossiness", smoothness);
-        if (material.HasProperty("_Smoothness")) material.SetFloat("_Smoothness", smoothness);
+        if (material.HasProperty("_Glossiness"))
+            material.SetFloat("_Glossiness", smoothness);
+        if (material.HasProperty("_Smoothness"))
+            material.SetFloat("_Smoothness", smoothness);
+
         return material;
     }
 }
