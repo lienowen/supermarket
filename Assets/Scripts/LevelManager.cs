@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class LevelConfig
+public class LevelRuntimeConfig
 {
     public int day;
     public string mission;
@@ -11,11 +11,11 @@ public class LevelConfig
 
 public class LevelManager : MonoBehaviour
 {
-    public LevelConfig currentLevel;
+    public LevelRuntimeConfig currentLevel;
 
     void Start()
     {
-        currentLevel = new LevelConfig();
+        currentLevel = new LevelRuntimeConfig();
         currentLevel.day = 1;
         currentLevel.mission = "Restock Drinks";
         currentLevel.targetCount = 10;
