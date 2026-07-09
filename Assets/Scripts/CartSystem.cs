@@ -41,8 +41,8 @@ public class CartSystem : MonoBehaviour, IInteractable
         if (item == null || items.Count >= capacity) return false;
 
         items.Add(item);
-        item.picked = false;
-        item.currentHolder = null;
+        item.picked = true;
+        item.currentHolder = transform;
         item.transform.SetParent(transform);
         item.transform.localPosition = new Vector3(0, 0.8f + items.Count * 0.08f, 0);
         item.transform.localRotation = Quaternion.identity;
@@ -56,6 +56,8 @@ public class CartSystem : MonoBehaviour, IInteractable
         int index = items.Count - 1;
         ProductBox item = items[index];
         items.RemoveAt(index);
+        item.picked = false;
+        item.currentHolder = null;
         item.transform.SetParent(null);
         return item;
     }
@@ -67,6 +69,12 @@ public class CartSystem : MonoBehaviour, IInteractable
 
     public void Clear()
     {
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i] == null) continue;
+            items[i].picked = false;
+            items[i].currentHolder = null;
+        }
         items.Clear();
     }
 }
