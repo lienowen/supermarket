@@ -30,7 +30,9 @@ public static class DesignedArtIntegration
                 catalog.coinIcon != null ||
                 catalog.playerIdle != null ||
                 catalog.drinkShelf != null ||
-                catalog.checkoutCounter != null);
+                catalog.checkoutCounter != null ||
+                catalog.fridgeDoubleDrinks != null ||
+                catalog.palletBoxStack != null);
     }
 
     public static string GetBindingSummary()
@@ -46,8 +48,14 @@ public static class DesignedArtIntegration
             "cart=" + NameOf(catalog.shoppingCart) + ", " +
             "shelf=" + NameOf(catalog.drinkShelf) + ", " +
             "checkout=" + NameOf(catalog.checkoutCounter) + ", " +
+            "fridge=" + NameOf(catalog.fridgeDoubleDrinks) + ", " +
+            "warehouse=" + NameOf(catalog.warehouseCorner) + ", " +
+            "pallet=" + NameOf(catalog.palletBoxStack) + ", " +
+            "promo=" + NameOf(catalog.promoStandSuperSale) + ", " +
+            "plant=" + NameOf(catalog.pottedPlantLarge) + ", " +
             "mission=" + NameOf(catalog.missionPanel) + ", " +
-            "coin=" + NameOf(catalog.coinIcon);
+            "coin=" + NameOf(catalog.coinIcon) + ", " +
+            "coinStack=" + NameOf(catalog.coinStack);
     }
 
     public static void ApplyEnvironment(Transform environmentRoot)
@@ -144,6 +152,114 @@ public static class DesignedArtIntegration
             true,
             true
         );
+    }
+
+    public static GameObject CreateDecoration(
+        string name,
+        Sprite sprite,
+        Vector3 worldPosition,
+        float worldHeight,
+        bool faceCamera,
+        bool addCollider,
+        Vector3 colliderSize)
+    {
+        if (sprite == null) return null;
+
+        GameObject target = new GameObject(name);
+        target.transform.position = worldPosition;
+
+        if (addCollider)
+        {
+            BoxCollider collider = target.AddComponent<BoxCollider>();
+            collider.size = colliderSize;
+            collider.center = new Vector3(0f, colliderSize.y * 0.5f, 0f);
+        }
+
+        ApplyWorldCutout(
+            target,
+            sprite,
+            worldHeight,
+            new Vector3(0f, worldHeight * 0.5f, 0f),
+            faceCamera,
+            false
+        );
+
+        return target;
+    }
+
+    public static GameObject CreateFridgeDecoration(Vector3 position)
+    {
+        return Catalog == null
+            ? null
+            : CreateDecoration(
+                "DesignedFridgeDoubleDrinks",
+                Catalog.fridgeDoubleDrinks,
+                position,
+                3.15f,
+                true,
+                true,
+                new Vector3(1.2f, 3f, 2.8f)
+            );
+    }
+
+    public static GameObject CreateWarehouseCornerDecoration(Vector3 position)
+    {
+        return Catalog == null
+            ? null
+            : CreateDecoration(
+                "DesignedWarehouseCorner",
+                Catalog.warehouseCorner,
+                position,
+                3.35f,
+                true,
+                false,
+                Vector3.zero
+            );
+    }
+
+    public static GameObject CreatePalletStackDecoration(Vector3 position)
+    {
+        return Catalog == null
+            ? null
+            : CreateDecoration(
+                "DesignedPalletBoxStack",
+                Catalog.palletBoxStack,
+                position,
+                1.8f,
+                true,
+                true,
+                new Vector3(1.8f, 1.7f, 1.2f)
+            );
+    }
+
+    public static GameObject CreatePromoStandDecoration(Vector3 position)
+    {
+        return Catalog == null
+            ? null
+            : CreateDecoration(
+                "DesignedPromoStand",
+                Catalog.promoStandSuperSale,
+                position,
+                2.25f,
+                true,
+                true,
+                new Vector3(1.2f, 2.1f, 0.8f)
+            );
+    }
+
+    public static GameObject CreatePlantDecoration(Vector3 position)
+    {
+        return Catalog == null
+            ? null
+            : CreateDecoration(
+                "DesignedPottedPlant",
+                Catalog.pottedPlantLarge,
+                position,
+                2.1f,
+                true,
+                false,
+                Vector3.zero
+            );
     }
 
     public static Texture2D GetTexture(Sprite sprite)
