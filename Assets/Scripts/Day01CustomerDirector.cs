@@ -3,11 +3,8 @@ using UnityEngine;
 public class Day01CustomerDirector : MonoBehaviour
 {
     public MissionSystem mission;
-    public Transform spawnPoint;
-    public Transform shelfPoint;
-    public Transform checkoutPoint;
-    public Transform exitPoint;
-    public int maxCustomers = 5;
+    public CustomerSpawner spawner;
+    public int totalCustomers = 5;
     public float spawnInterval = 3f;
 
     private int spawned;
@@ -15,33 +12,20 @@ public class Day01CustomerDirector : MonoBehaviour
 
     void Update()
     {
-        if (mission == null || !mission.completed || spawned >= maxCustomers)
-            return;
+        if (mission == null || !mission.completed) return;
+        if (spawner == null || spawned >= totalCustomers) return;
 
         timer += Time.deltaTime;
-        if (timer < spawnInterval) return;
+        if (timer < Mathf.Max(0.5f, spawnInterval)) return;
 
         timer = 0f;
-        SpawnCustomer();
+        GameObject customer = spawner.SpawnCustomer();
+        if (customer != null)
+            spawned++;
     }
 
-    void SpawnCustomer()
+    public int GetRemainingCustomers()
     {
-        Vector3 position = spawnPoint != null ? spawnPoint.position : transform.position;
-        GameObject customer = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        customer.name = "Customer_" + (spawned + 1);
-        customer.transform.position = position;
-
-        Renderer renderer = customer.GetComponent<Renderer>();
-        if (renderer != null)
-            renderer.material.color = Color.HSVToRGB((spawned * 0.17f) % 1f, 0.55f, 0.95f);
-
-        SimpleCustomerFlow flow = customer.AddComponent<SimpleCustomerFlow>();
-        flow.shelfPoint = shelfPoint;
-        flow.checkoutPoint = checkoutPoint;
-        flow.exitPoint = exitPoint;
-        flow.purchaseValue = 35 + spawned * 5;
-
-        spawned++;
+        return Mathf.Max(0, totalCustomers - spawned);
     }
 }
