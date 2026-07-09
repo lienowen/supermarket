@@ -9,9 +9,8 @@ public static class ArtCatalogBuilder
 {
     private const string ArtRoot = "Assets/Art";
     private const string ResourceFolder = "Assets/Resources";
-    private const string GeneratedFolder = "Assets/Resources/Generated";
     private const string CatalogPath = "Assets/Resources/Generated/ArtRuntimeCatalog.asset";
-    private const string SessionKey = "supermarket.art.catalog.v3.checked";
+    private const string SessionKey = "supermarket.art.catalog.v4.checked";
 
     static ArtCatalogBuilder()
     {
@@ -67,7 +66,7 @@ public static class ArtCatalogBuilder
             AssetDatabase.CreateAsset(catalog, CatalogPath);
         }
 
-        // Characters: exact project art first, fuzzy fallback only inside character folders.
+        // Characters.
         catalog.playerIdle = LoadVerifiedSprite(
             "Assets/Art/Characters/Player/player_idle.png",
             "Assets/Art/Characters/Player/player_front.png"
@@ -77,25 +76,55 @@ public static class ArtCatalogBuilder
         );
         catalog.player = catalog.playerIdle != null
             ? catalog.playerIdle
-            : FindBestSprite(texturePaths, new[] { "/characters/player/", "player" }, new[] { "icon", "ui", "shadow" });
-
+            : FindBestSprite(
+                texturePaths,
+                new[] { "/characters/player/", "player" },
+                new[] { "icon", "ui", "shadow" }
+            );
         catalog.customers = FindCustomerSprites(texturePaths);
 
-        // Products: exact files only. These are presentation sprites, not surface textures.
+        // Product cutouts.
         catalog.colaBox = LoadVerifiedSprite("Assets/Art/Products/cola_box.png");
         catalog.waterBox = LoadVerifiedSprite("Assets/Art/Products/water_box.png");
         catalog.milkBox = LoadVerifiedSprite("Assets/Art/Products/milk_box.png");
         catalog.chipsBox = LoadVerifiedSprite("Assets/Art/Products/chips_box.png");
         catalog.drinkBox = catalog.colaBox;
 
-        // Gameplay object art: exact files only. Never fuzzy-match unrelated promotional images.
-        catalog.shoppingCart = LoadVerifiedSprite("Assets/Art/Props/shopping_cart.png");
-        catalog.drinkShelf = LoadVerifiedSprite("Assets/Art/Environment/Interior/shelf_drinks.png");
-        catalog.checkoutCounter = LoadVerifiedSprite("Assets/Art/Environment/Interior/checkout_counter.png");
+        // Main gameplay cutouts. Keep several exact historical locations because the packs
+        // were uploaded in multiple batches and some files live in older folders.
+        catalog.shoppingCart = LoadVerifiedSprite(
+            "Assets/Art/Props/shopping_cart.png",
+            "Assets/Art/Environment/shopping_cart.png"
+        );
+        catalog.drinkShelf = LoadVerifiedSprite(
+            "Assets/Art/Environment/Interior/shelf_drinks.png"
+        );
+        catalog.checkoutCounter = LoadVerifiedSprite(
+            "Assets/Art/Environment/Interior/checkout_counter.png"
+        );
+        catalog.fridgeDoubleDrinks = LoadVerifiedSprite(
+            "Assets/Art/Environment/Interior/fridge_double_drinks.png"
+        );
 
-        // World surfaces: only dedicated texture files are allowed.
-        // Do NOT fall back to anything containing words like floor/wall; that caused the wet-floor
-        // warning artwork and sale posters to be tiled across the whole scene.
+        // Existing Day01 decoration pack.
+        catalog.warehouseCorner = LoadVerifiedSprite(
+            "Assets/Art/Environment/Storage/warehouse_corner.png",
+            "Assets/Art/Maps/Locations/warehouse_corner.png"
+        );
+        catalog.palletBoxStack = LoadVerifiedSprite(
+            "Assets/Art/Environment/Storage/pallet_box_stack.png",
+            "Assets/Art/Props/pallet_box_stack.png"
+        );
+        catalog.promoStandSuperSale = LoadVerifiedSprite(
+            "Assets/Art/Props/Promo/promo_stand_super_sale.png",
+            "Assets/Art/Decorations/promo_stand_super_sale.png"
+        );
+        catalog.pottedPlantLarge = LoadVerifiedSprite(
+            "Assets/Art/Decorations/potted_plant_large.png",
+            "Assets/Art/Props/potted_plant_large.png"
+        );
+
+        // World surfaces only accept dedicated tile textures. No fuzzy matching here.
         catalog.floor = LoadVerifiedSprite(
             "Assets/Art/Environment/Textures/floor_tile.png",
             "Assets/Art/Environment/Interior/floor_tile.png"
@@ -106,11 +135,19 @@ public static class ArtCatalogBuilder
         );
         catalog.warehouseWall = catalog.wall;
 
-        // UI: exact files only.
-        catalog.missionPanel = LoadVerifiedSprite("Assets/Art/UI/mission_panel.png");
+        // UI pack.
+        catalog.missionPanel = LoadVerifiedSprite(
+            "Assets/Art/UI/mission_panel.png",
+            "Assets/Art/Economy/UI/Panels/mission_panel.png"
+        );
         catalog.coinIcon = LoadVerifiedSprite(
             "Assets/Art/UI/coin.png",
-            "Assets/Art/UI/coin_stack.png"
+            "Assets/Art/Currency/coin.png"
+        );
+        catalog.coinStack = LoadVerifiedSprite(
+            "Assets/Art/Currency/coin_stack.png",
+            "Assets/Art/UI/coin_stack.png",
+            "Assets/Art/Economy/UI/Panels/coin_stack.png"
         );
         catalog.starIcon = LoadVerifiedSprite("Assets/Art/UI/star.png");
         catalog.timerIcon = LoadVerifiedSprite("Assets/Art/UI/timer.png");
@@ -128,17 +165,21 @@ public static class ArtCatalogBuilder
         if (forceLog || catalog.player != null || catalog.colaBox != null)
         {
             Debug.Log(
-                "ArtCatalogBuilder: safe catalog ready. " +
+                "ArtCatalogBuilder: Day01 cutout pack ready. " +
                 "Player=" + NameOf(catalog.player) + ", " +
                 "Customers=" + (catalog.customers != null ? catalog.customers.Length : 0) + ", " +
                 "Cola=" + NameOf(catalog.colaBox) + ", " +
                 "Cart=" + NameOf(catalog.shoppingCart) + ", " +
                 "Shelf=" + NameOf(catalog.drinkShelf) + ", " +
                 "Checkout=" + NameOf(catalog.checkoutCounter) + ", " +
-                "FloorTexture=" + NameOf(catalog.floor) + ", " +
-                "WallTexture=" + NameOf(catalog.wall) + ", " +
+                "Fridge=" + NameOf(catalog.fridgeDoubleDrinks) + ", " +
+                "Warehouse=" + NameOf(catalog.warehouseCorner) + ", " +
+                "Pallet=" + NameOf(catalog.palletBoxStack) + ", " +
+                "Promo=" + NameOf(catalog.promoStandSuperSale) + ", " +
+                "Plant=" + NameOf(catalog.pottedPlantLarge) + ", " +
                 "MissionPanel=" + NameOf(catalog.missionPanel) + ", " +
-                "Coin=" + NameOf(catalog.coinIcon)
+                "Coin=" + NameOf(catalog.coinIcon) + ", " +
+                "CoinStack=" + NameOf(catalog.coinStack)
             );
         }
     }
