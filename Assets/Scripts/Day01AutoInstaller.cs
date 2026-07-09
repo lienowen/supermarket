@@ -39,7 +39,9 @@ public static class Day01AutoInstaller
         day.StartDay();
         state.StartGame();
 
-        CreateGround();
+        GameObject ground = CreateGround();
+        ArtVisualFactory.ApplyFloor(ground);
+
         CreateWarehouseShell();
 
         GameObject player = CreatePlayer();
@@ -56,6 +58,7 @@ public static class Day01AutoInstaller
 
             ProductBox product = box.AddComponent<ProductBox>();
             product.productId = "cola_box";
+            ArtVisualFactory.ApplyDrinkBox(box);
         }
 
         GameObject cart = CreateCube(
@@ -65,6 +68,7 @@ public static class Day01AutoInstaller
             new Color(0.15f, 0.45f, 0.9f)
         );
         cart.AddComponent<CartSystem>();
+        ArtVisualFactory.ApplyCart(cart);
 
         GameObject shelf = CreateCube(
             "DrinkShelf",
@@ -75,6 +79,7 @@ public static class Day01AutoInstaller
         ShelfSystem shelfSystem = shelf.AddComponent<ShelfSystem>();
         shelfSystem.capacity = 10;
         shelfSystem.category = "drink";
+        ArtVisualFactory.ApplyShelf(shelf);
 
         Transform customerSpawn = CreatePoint("CustomerSpawn", new Vector3(-8f, 0f, 6f));
         Transform shelfPoint = CreatePoint("CustomerShelfPoint", new Vector3(4.2f, 0f, 0f));
@@ -87,6 +92,7 @@ public static class Day01AutoInstaller
             new Vector3(2.2f, 1.4f, 1.2f),
             new Color(0.95f, 0.65f, 0.1f)
         );
+        ArtVisualFactory.ApplyCheckout(checkout);
 
         CheckoutQueueSystem checkoutQueue = checkout.AddComponent<CheckoutQueueSystem>();
         checkoutQueue.checkoutPoint = checkoutPoint;
@@ -118,7 +124,11 @@ public static class Day01AutoInstaller
         Day01HUD hud = systems.AddComponent<Day01HUD>();
         hud.mission = mission;
 
-        Debug.Log("Day01AutoInstaller: playable Day01 with customer checkout flow generated successfully.");
+        Debug.Log(
+            ArtVisualFactory.HasCatalog()
+                ? "Day01AutoInstaller: playable Day01 generated with imported art visuals."
+                : "Day01AutoInstaller: art catalog missing, primitive fallback visuals are active."
+        );
     }
 
     static GameObject CreatePlayer()
@@ -153,6 +163,8 @@ public static class Day01AutoInstaller
         if (renderer != null)
             renderer.material.color = new Color(0.2f, 0.55f, 0.95f);
 
+        ArtVisualFactory.ApplyPlayer(visual);
+
         return player;
     }
 
@@ -177,9 +189,9 @@ public static class Day01AutoInstaller
         follow.offset = new Vector3(0f, 8f, -8f);
     }
 
-    static void CreateGround()
+    static GameObject CreateGround()
     {
-        CreateCube(
+        return CreateCube(
             "Ground",
             new Vector3(0f, -0.25f, 1f),
             new Vector3(22f, 0.5f, 16f),
@@ -189,19 +201,21 @@ public static class Day01AutoInstaller
 
     static void CreateWarehouseShell()
     {
-        CreateCube(
+        GameObject backWall = CreateCube(
             "WarehouseBackWall",
             new Vector3(-5f, 1.5f, -5f),
             new Vector3(8f, 3f, 0.3f),
             new Color(0.55f, 0.6f, 0.65f)
         );
+        ArtVisualFactory.ApplyWall(backWall);
 
-        CreateCube(
+        GameObject sideWall = CreateCube(
             "WarehouseSideWall",
             new Vector3(-9f, 1.5f, -1.5f),
             new Vector3(0.3f, 3f, 7f),
             new Color(0.55f, 0.6f, 0.65f)
         );
+        ArtVisualFactory.ApplyWall(sideWall);
     }
 
     static GameObject CreateCube(string name, Vector3 position, Vector3 scale, Color color)
