@@ -38,8 +38,13 @@ public class CustomerSpawner : MonoBehaviour
         }
         else
         {
-            customer = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            customer.transform.position = position + Vector3.up;
+            customer = new GameObject("CustomerRuntime");
+            customer.transform.position = position;
+
+            CapsuleCollider bodyCollider = customer.AddComponent<CapsuleCollider>();
+            bodyCollider.height = 2f;
+            bodyCollider.radius = 0.42f;
+            bodyCollider.center = new Vector3(0f, 1f, 0f);
         }
 
         spawnedSequence++;
@@ -59,19 +64,7 @@ public class CustomerSpawner : MonoBehaviour
         life.onLeave += RemoveCustomer;
 
         if (customerPrefab == null)
-        {
-            ArtVisualFactory.ApplyCustomer(customer, spawnedSequence - 1);
-
-            if (!ArtVisualFactory.HasCatalog())
-            {
-                Renderer renderer = customer.GetComponentInChildren<Renderer>();
-                if (renderer != null)
-                {
-                    float hue = (spawnedSequence * 0.17f) % 1f;
-                    renderer.material.color = Color.HSVToRGB(hue, 0.55f, 0.95f);
-                }
-            }
-        }
+            Procedural3DVisualFactory.ApplyCustomer(customer, spawnedSequence - 1);
 
         return customer;
     }

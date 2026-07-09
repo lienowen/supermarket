@@ -41,9 +41,12 @@ public static class Day01AutoInstaller
         state.StartGame();
 
         GameObject ground = CreateGround();
-        ArtVisualFactory.ApplyFloor(ground);
+        GameObject backWall;
+        GameObject sideWall;
+        CreateWarehouseShell(out backWall, out sideWall);
+        Procedural3DVisualFactory.ApplyEnvironment(ground, backWall, sideWall);
 
-        CreateWarehouseShell();
+        CreateStoreDecoration();
 
         GameObject player = CreatePlayer();
         CreateCamera(player.transform);
@@ -52,14 +55,14 @@ public static class Day01AutoInstaller
         {
             GameObject box = CreateCube(
                 "DrinkBox_" + (i + 1),
-                new Vector3(-7f + (i % 5) * 0.8f, 0.45f, -2.5f + (i / 5) * 0.9f),
+                new Vector3(-7f + (i % 5) * 0.82f, 0.45f, -2.5f + (i / 5) * 0.92f),
                 new Vector3(0.65f, 0.65f, 0.65f),
                 new Color(0.85f, 0.15f, 0.12f)
             );
 
             ProductBox product = box.AddComponent<ProductBox>();
             product.productId = "cola_box";
-            ArtVisualFactory.ApplyDrinkBox(box);
+            Procedural3DVisualFactory.ApplyDrinkBox(box);
         }
 
         GameObject cart = CreateCube(
@@ -69,7 +72,7 @@ public static class Day01AutoInstaller
             new Color(0.15f, 0.45f, 0.9f)
         );
         cart.AddComponent<CartSystem>();
-        ArtVisualFactory.ApplyCart(cart);
+        Procedural3DVisualFactory.ApplyCart(cart);
 
         GameObject shelf = CreateCube(
             "DrinkShelf",
@@ -80,7 +83,7 @@ public static class Day01AutoInstaller
         ShelfSystem shelfSystem = shelf.AddComponent<ShelfSystem>();
         shelfSystem.capacity = 10;
         shelfSystem.category = "drink";
-        ArtVisualFactory.ApplyShelf(shelf);
+        Procedural3DVisualFactory.ApplyShelf(shelf);
 
         Transform customerSpawn = CreatePoint("CustomerSpawn", new Vector3(-8f, 0f, 6f));
         Transform shelfPoint = CreatePoint("CustomerShelfPoint", new Vector3(4.2f, 0f, 0f));
@@ -93,7 +96,7 @@ public static class Day01AutoInstaller
             new Vector3(2.2f, 1.4f, 1.2f),
             new Color(0.95f, 0.65f, 0.1f)
         );
-        ArtVisualFactory.ApplyCheckout(checkout);
+        Procedural3DVisualFactory.ApplyCheckout(checkout);
 
         CheckoutQueueSystem checkoutQueue = checkout.AddComponent<CheckoutQueueSystem>();
         checkoutQueue.checkoutPoint = checkoutPoint;
@@ -126,22 +129,19 @@ public static class Day01AutoInstaller
         hud.mission = mission;
         hud.director = director;
 
-        Debug.Log(
-            ArtVisualFactory.HasCatalog()
-                ? "Day01AutoInstaller: playable Day01 generated with imported art visuals."
-                : "Day01AutoInstaller: art catalog missing, primitive fallback visuals are active."
-        );
+        Debug.Log("Day01AutoInstaller: animated procedural 3D Day01 generated successfully.");
     }
 
     static GameObject CreatePlayer()
     {
         GameObject player = new GameObject("Player");
         player.tag = "Player";
-        player.transform.position = new Vector3(-5f, 1f, 2f);
+        player.transform.position = new Vector3(-5f, 0f, 2f);
 
         CharacterController controller = player.AddComponent<CharacterController>();
-        controller.height = 2f;
+        controller.height = 2.2f;
         controller.radius = 0.45f;
+        controller.center = new Vector3(0f, 1.1f, 0f);
 
         player.AddComponent<PlayerController>();
         player.AddComponent<InteractionSystem>();
@@ -149,24 +149,10 @@ public static class Day01AutoInstaller
         CarrySystem carry = player.AddComponent<CarrySystem>();
         GameObject carryPoint = new GameObject("CarryPoint");
         carryPoint.transform.SetParent(player.transform);
-        carryPoint.transform.localPosition = new Vector3(0f, 1.1f, 0.9f);
+        carryPoint.transform.localPosition = new Vector3(0f, 1.25f, 0.9f);
         carry.carryPoint = carryPoint.transform;
 
-        GameObject visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        visual.name = "PlayerVisual";
-        visual.transform.SetParent(player.transform);
-        visual.transform.localPosition = Vector3.zero;
-
-        Collider visualCollider = visual.GetComponent<Collider>();
-        if (visualCollider != null)
-            Object.Destroy(visualCollider);
-
-        Renderer renderer = visual.GetComponent<Renderer>();
-        if (renderer != null)
-            renderer.material.color = new Color(0.2f, 0.55f, 0.95f);
-
-        ArtVisualFactory.ApplyPlayer(visual);
-
+        Procedural3DVisualFactory.ApplyPlayer(player);
         return player;
     }
 
@@ -181,14 +167,20 @@ public static class Day01AutoInstaller
             cameraObject.AddComponent<AudioListener>();
         }
 
-        main.transform.position = target.position + new Vector3(0f, 8f, -8f);
+        main.fieldOfView = 52f;
+        main.nearClipPlane = 0.1f;
+        main.farClipPlane = 150f;
+        main.clearFlags = CameraClearFlags.SolidColor;
+        main.backgroundColor = new Color(0.48f, 0.68f, 0.84f);
+        main.transform.position = target.position + new Vector3(0f, 8.5f, -9.5f);
 
         CameraFollow follow = main.gameObject.GetComponent<CameraFollow>();
         if (follow == null)
             follow = main.gameObject.AddComponent<CameraFollow>();
 
         follow.target = target;
-        follow.offset = new Vector3(0f, 8f, -8f);
+        follow.offset = new Vector3(0f, 8.5f, -9.5f);
+        follow.smooth = 6f;
     }
 
     static GameObject CreateGround()
@@ -201,23 +193,55 @@ public static class Day01AutoInstaller
         );
     }
 
-    static void CreateWarehouseShell()
+    static void CreateWarehouseShell(out GameObject backWall, out GameObject sideWall)
     {
-        GameObject backWall = CreateCube(
+        backWall = CreateCube(
             "WarehouseBackWall",
             new Vector3(-5f, 1.5f, -5f),
             new Vector3(8f, 3f, 0.3f),
             new Color(0.55f, 0.6f, 0.65f)
         );
-        ArtVisualFactory.ApplyWall(backWall);
 
-        GameObject sideWall = CreateCube(
+        sideWall = CreateCube(
             "WarehouseSideWall",
             new Vector3(-9f, 1.5f, -1.5f),
             new Vector3(0.3f, 3f, 7f),
             new Color(0.55f, 0.6f, 0.65f)
         );
-        ArtVisualFactory.ApplyWall(sideWall);
+    }
+
+    static void CreateStoreDecoration()
+    {
+        CreateCube(
+            "StoreBackWall",
+            new Vector3(6.5f, 1.8f, -5.5f),
+            new Vector3(7f, 3.6f, 0.25f),
+            new Color(0.88f, 0.91f, 0.93f)
+        );
+
+        CreateCube(
+            "CheckoutZoneFloor",
+            new Vector3(6.5f, 0.01f, 4.5f),
+            new Vector3(6f, 0.04f, 3.2f),
+            new Color(0.94f, 0.83f, 0.35f)
+        );
+
+        CreateCube(
+            "WarehouseZoneFloor",
+            new Vector3(-5.5f, 0.01f, -1.2f),
+            new Vector3(6.5f, 0.04f, 6.8f),
+            new Color(0.58f, 0.66f, 0.72f)
+        );
+
+        for (int i = 0; i < 4; i++)
+        {
+            CreateCube(
+                "CeilingLight_" + i,
+                new Vector3(-4f + i * 4f, 3.8f, 1f),
+                new Vector3(2.2f, 0.08f, 0.25f),
+                Color.white
+            );
+        }
     }
 
     static GameObject CreateCube(string name, Vector3 position, Vector3 scale, Color color)
