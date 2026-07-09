@@ -10,20 +10,36 @@ public class CarrySystem : MonoBehaviour
         return currentBox != null;
     }
 
-    public void Pickup(ProductBox box)
+    public ProductBox GetCurrentBox()
     {
-        if(currentBox != null) return;
+        return currentBox;
+    }
+
+    public bool Pickup(ProductBox box)
+    {
+        if (box == null || currentBox != null) return false;
+
+        if (carryPoint == null)
+            carryPoint = transform;
 
         currentBox = box;
-        box.transform.SetParent(carryPoint);
-        box.transform.localPosition = Vector3.zero;
+        box.SetCarried(carryPoint);
+        return true;
+    }
+
+    public ProductBox Release()
+    {
+        ProductBox released = currentBox;
+        currentBox = null;
+        return released;
     }
 
     public void Drop()
     {
-        if(currentBox == null) return;
+        if (currentBox == null) return;
 
-        currentBox.transform.SetParent(null);
-        currentBox = null;
+        ProductBox box = Release();
+        box.Drop();
+        box.transform.position = transform.position + transform.forward * 1.2f;
     }
 }
