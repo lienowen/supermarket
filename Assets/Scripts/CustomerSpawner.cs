@@ -8,6 +8,7 @@ public class CustomerSpawner : MonoBehaviour
     public int maxCustomers = 10;
     public float spawnInterval = 10f;
     public bool autoSpawn = true;
+    public bool createWorldVisuals = true;
 
     [Header("Route")]
     public Transform shelfPoint;
@@ -63,11 +64,10 @@ public class CustomerSpawner : MonoBehaviour
 
         life.onLeave += RemoveCustomer;
 
-        if (customerPrefab == null)
+        if (customerPrefab == null && createWorldVisuals)
         {
             int visualIndex = spawnedSequence - 1;
             bool designed = DesignedCharacterVisual.ApplyCustomer(customer, visualIndex);
-
             if (!designed)
                 Procedural3DVisualFactory.ApplyCustomer(customer, visualIndex);
         }
@@ -90,7 +90,6 @@ public class CustomerLifeCycle : MonoBehaviour
     {
         if (leaving) return;
         leaving = true;
-
         onLeave?.Invoke();
         Destroy(gameObject);
     }
