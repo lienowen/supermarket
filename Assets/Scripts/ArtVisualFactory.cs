@@ -64,16 +64,24 @@ public static class ArtVisualFactory
 
         DisablePrimitiveRenderer(target);
 
-        GameObject visual = new GameObject("ArtVisual");
+        Transform existing = target.transform.Find("ArtVisual");
+        GameObject visual = existing != null ? existing.gameObject : new GameObject("ArtVisual");
         visual.transform.SetParent(target.transform, false);
-        visual.transform.localPosition = Vector3.up * 0.26f;
+        visual.transform.localPosition = Vector3.up * 0.51f;
         visual.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
 
-        SpriteRenderer renderer = visual.AddComponent<SpriteRenderer>();
+        SpriteRenderer renderer = visual.GetComponent<SpriteRenderer>();
+        if (renderer == null)
+            renderer = visual.AddComponent<SpriteRenderer>();
+
         renderer.sprite = sprite;
         renderer.sortingOrder = -20;
 
-        FitSprite(renderer, Mathf.Max(target.transform.localScale.x, target.transform.localScale.z));
+        float targetSize = Mathf.Max(
+            Mathf.Abs(target.transform.lossyScale.x),
+            Mathf.Abs(target.transform.lossyScale.z)
+        );
+        FitSpriteWorldSize(renderer, targetSize);
     }
 
     private static void ApplyBillboard(GameObject target, Sprite sprite, float height, Vector3 localPosition, bool keepVertical)
@@ -95,7 +103,7 @@ public static class ArtVisualFactory
         renderer.sprite = sprite;
         renderer.sortingOrder = 5;
 
-        FitSprite(renderer, height);
+        FitSpriteWorldSize(renderer, height);
 
         WorldSpriteBillboard billboard = visual.GetComponent<WorldSpriteBillboard>();
         if (billboard == null)
@@ -104,15 +112,30 @@ public static class ArtVisualFactory
         billboard.keepVertical = keepVertical;
     }
 
-    private static void FitSprite(SpriteRenderer renderer, float targetHeight)
+    private static void FitSpriteWorldSize(SpriteRenderer renderer, float targetHeight)
     {
         if (renderer == null || renderer.sprite == null) return;
 
         float sourceHeight = renderer.sprite.bounds.size.y;
         if (sourceHeight <= 0.001f) return;
 
-        float scale = targetHeight / sourceHeight;
-        renderer.transform.localScale = Vector3.one * scale;
+        float worldScale = targetHeight / sourceHeight;
+        Vector3 parentScale = renderer.transform.parent != null
+            ? renderer.transform.parent.lossyScale
+            : Vector3.one;
+
+        renderer.transform.localScale = new Vector3(
+            SafeDivide(worldScale, parentScale.x),
+            SafeDivide(worldScale, parentScale.y),
+            SafeDivide(worldScale, parentScale.z)
+        );
+    }
+
+    private static float SafeDivide(float value, float divisor)
+    {
+        float magnitude = Mathf.Abs(divisor);
+        if (magnitude < 0.001f) return value;
+        return value / magnitude;
     }
 
     private static void DisablePrimitiveRenderer(GameObject target)
