@@ -1,7 +1,5 @@
 #if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,7 +10,7 @@ public static class ArtCatalogBuilder
     private const string ResourceFolder = "Assets/Resources";
     private const string GeneratedFolder = "Assets/Resources/Generated";
     private const string CatalogPath = "Assets/Resources/Generated/ArtRuntimeCatalog.asset";
-    private const string SessionKey = "supermarket.art.catalog.checked";
+    private const string SessionKey = "supermarket.art.catalog.v2.checked";
 
     static ArtCatalogBuilder()
     {
@@ -32,12 +30,11 @@ public static class ArtCatalogBuilder
 
         if (!AssetDatabase.IsValidFolder(ArtRoot))
         {
-            Debug.LogWarning("ArtCatalogBuilder: Assets/Art was not found. Primitive fallback visuals will be used.");
+            Debug.LogWarning("ArtCatalogBuilder: Assets/Art was not found.");
             return;
         }
 
-        if (AssetDatabase.LoadAssetAtPath<ArtRuntimeCatalog>(CatalogPath) == null)
-            BuildCatalog(false, false);
+        BuildCatalog(false, true);
     }
 
     private static void BuildCatalog(bool forceLog, bool fixImportSettings)
@@ -69,50 +66,89 @@ public static class ArtCatalogBuilder
             AssetDatabase.CreateAsset(catalog, CatalogPath);
         }
 
-        catalog.player = FindBestSprite(texturePaths,
-            new[] { "/characters/player/", "player" },
-            new[] { "icon", "ui", "shadow" });
+        catalog.playerIdle = LoadFirstSprite(
+            "Assets/Art/Characters/Player/player_idle.png",
+            "Assets/Art/Characters/Player/player_front.png"
+        );
+        catalog.playerCarry = LoadFirstSprite(
+            "Assets/Art/Characters/Player/player_carry.png"
+        );
+        catalog.player = catalog.playerIdle != null
+            ? catalog.playerIdle
+            : FindBestSprite(texturePaths, new[] { "/characters/player/", "player" }, new[] { "icon", "ui", "shadow" });
 
         catalog.customers = FindCustomerSprites(texturePaths);
 
-        catalog.drinkBox = FindBestSprite(texturePaths,
-            new[] { "cola_crate", "cola_box", "drink_box", "/products/" },
-            new[] { "icon", "ui" });
+        catalog.colaBox = LoadFirstSprite("Assets/Art/Products/cola_box.png");
+        catalog.waterBox = LoadFirstSprite("Assets/Art/Products/water_box.png");
+        catalog.milkBox = LoadFirstSprite("Assets/Art/Products/milk_box.png");
+        catalog.chipsBox = LoadFirstSprite("Assets/Art/Products/chips_box.png");
+        catalog.drinkBox = catalog.colaBox != null
+            ? catalog.colaBox
+            : FindBestSprite(texturePaths, new[] { "cola_crate", "cola_box", "drink_box", "/products/" }, new[] { "icon", "ui" });
 
-        catalog.shoppingCart = FindBestSprite(texturePaths,
-            new[] { "shopping_cart", "cart" },
-            new[] { "icon", "ui" });
+        catalog.shoppingCart = LoadFirstSprite(
+            "Assets/Art/Props/shopping_cart.png"
+        );
+        if (catalog.shoppingCart == null)
+            catalog.shoppingCart = FindBestSprite(texturePaths, new[] { "shopping_cart", "cart" }, new[] { "icon", "ui" });
 
-        catalog.drinkShelf = FindBestSprite(texturePaths,
-            new[] { "shelf_drinks", "drink_shelf", "shelf" },
-            new[] { "icon", "ui" });
+        catalog.drinkShelf = LoadFirstSprite(
+            "Assets/Art/Environment/Interior/shelf_drinks.png",
+            "Assets/Art/Environment/Interior/shelf.png"
+        );
+        if (catalog.drinkShelf == null)
+            catalog.drinkShelf = FindBestSprite(texturePaths, new[] { "shelf_drinks", "drink_shelf", "shelf" }, new[] { "icon", "ui" });
 
-        catalog.checkoutCounter = FindBestSprite(texturePaths,
-            new[] { "checkout_counter", "checkout", "cashier" },
-            new[] { "icon", "ui", "/characters/" });
+        catalog.checkoutCounter = LoadFirstSprite(
+            "Assets/Art/Environment/Interior/checkout_counter.png",
+            "Assets/Art/Environment/Interior/checkout.png"
+        );
+        if (catalog.checkoutCounter == null)
+            catalog.checkoutCounter = FindBestSprite(texturePaths, new[] { "checkout_counter", "checkout", "cashier" }, new[] { "icon", "ui", "/characters/" });
 
-        catalog.warehouseWall = FindBestSprite(texturePaths,
-            new[] { "warehouse", "wall", "/environment/interior/" },
-            new[] { "icon", "ui", "floor" });
+        catalog.floor = LoadFirstSprite(
+            "Assets/Art/Environment/Interior/floor.png",
+            "Assets/Art/Environment/floor.png"
+        );
+        if (catalog.floor == null)
+            catalog.floor = FindBestSprite(texturePaths, new[] { "floor", "ground", "tile" }, new[] { "icon", "ui" });
 
-        catalog.floor = FindBestSprite(texturePaths,
-            new[] { "floor", "ground", "tile" },
-            new[] { "icon", "ui" });
+        catalog.wall = LoadFirstSprite(
+            "Assets/Art/Environment/Interior/wall.png",
+            "Assets/Art/Environment/wall.png"
+        );
+        catalog.warehouseWall = catalog.wall != null
+            ? catalog.wall
+            : FindBestSprite(texturePaths, new[] { "warehouse", "wall", "/environment/interior/" }, new[] { "icon", "ui", "floor" });
+
+        catalog.missionPanel = LoadFirstSprite("Assets/Art/UI/mission_panel.png");
+        catalog.coinIcon = LoadFirstSprite(
+            "Assets/Art/UI/coin.png",
+            "Assets/Art/UI/coin_stack.png"
+        );
+        catalog.starIcon = LoadFirstSprite("Assets/Art/UI/star.png");
+        catalog.timerIcon = LoadFirstSprite("Assets/Art/UI/timer.png");
+        catalog.buttonPlay = LoadFirstSprite("Assets/Art/UI/button_play.png");
+        catalog.buttonUpgrade = LoadFirstSprite("Assets/Art/UI/button_upgrade.png");
+        catalog.buttonNext = LoadFirstSprite("Assets/Art/UI/button_next.png");
 
         EditorUtility.SetDirty(catalog);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        if (forceLog || catalog.player != null || catalog.drinkBox != null || catalog.shoppingCart != null)
+        if (forceLog || catalog.player != null || catalog.drinkBox != null || catalog.missionPanel != null)
         {
             Debug.Log(
-                "ArtCatalogBuilder: catalog ready. " +
+                "ArtCatalogBuilder: designed assets bound. " +
                 "Player=" + NameOf(catalog.player) + ", " +
                 "Customers=" + (catalog.customers != null ? catalog.customers.Length : 0) + ", " +
-                "Box=" + NameOf(catalog.drinkBox) + ", " +
+                "Cola=" + NameOf(catalog.colaBox) + ", " +
                 "Cart=" + NameOf(catalog.shoppingCart) + ", " +
                 "Shelf=" + NameOf(catalog.drinkShelf) + ", " +
-                "Checkout=" + NameOf(catalog.checkoutCounter)
+                "Checkout=" + NameOf(catalog.checkoutCounter) + ", " +
+                "MissionPanel=" + NameOf(catalog.missionPanel) + ", " +
+                "Coin=" + NameOf(catalog.coinIcon)
             );
         }
     }
@@ -206,13 +242,25 @@ public static class ArtCatalogBuilder
         return LoadSprite(bestPath);
     }
 
+    private static Sprite LoadFirstSprite(params string[] paths)
+    {
+        foreach (string path in paths)
+        {
+            Sprite sprite = LoadSprite(path);
+            if (sprite != null)
+                return sprite;
+        }
+
+        return null;
+    }
+
     private static Sprite LoadSprite(string path)
     {
         Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
         if (sprite != null) return sprite;
 
-        UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath(path);
-        foreach (UnityEngine.Object asset in assets)
+        Object[] assets = AssetDatabase.LoadAllAssetsAtPath(path);
+        foreach (Object asset in assets)
         {
             sprite = asset as Sprite;
             if (sprite != null) return sprite;
