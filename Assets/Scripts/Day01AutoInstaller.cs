@@ -137,6 +137,10 @@ public static class Day01AutoInstaller
         hud.director = director;
         hud.tapFlow = tapFlow;
 
+        Day01SaleFeedback saleFeedback = systems.AddComponent<Day01SaleFeedback>();
+        saleFeedback.gameplayCamera = gameplayCamera;
+        saleFeedback.checkoutAnchor = checkout.transform;
+
         Debug.Log(
             "Day01AutoInstaller: static stage + tap flow active. " +
             DesignedArtIntegration.GetBindingSummary()
