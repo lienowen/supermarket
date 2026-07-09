@@ -17,11 +17,13 @@ public static class Day01AutoInstaller
     {
         GameObject systems = new GameObject("GameSystems");
 
-        EconomySystem economy = systems.AddComponent<EconomySystem>();
-        StoreLevelSystem level = systems.AddComponent<StoreLevelSystem>();
-        ScoreSystem score = systems.AddComponent<ScoreSystem>();
+        systems.AddComponent<EconomySystem>();
+        systems.AddComponent<StoreLevelSystem>();
+        systems.AddComponent<ScoreSystem>();
+
         MissionSystem mission = systems.AddComponent<MissionSystem>();
         mission.targetAmount = 10;
+
         GameStateManager state = systems.AddComponent<GameStateManager>();
         systems.AddComponent<ProductDatabase>();
         systems.AddComponent<SupplierSystem>();
@@ -74,31 +76,49 @@ public static class Day01AutoInstaller
         shelfSystem.capacity = 10;
         shelfSystem.category = "drink";
 
+        Transform customerSpawn = CreatePoint("CustomerSpawn", new Vector3(-8f, 0f, 6f));
+        Transform shelfPoint = CreatePoint("CustomerShelfPoint", new Vector3(4.2f, 0f, 0f));
+        Transform checkoutPoint = CreatePoint("CustomerCheckoutPoint", new Vector3(6.3f, 0f, 4.5f));
+        Transform exitPoint = CreatePoint("CustomerExitPoint", new Vector3(-8f, 0f, 6f));
+
         GameObject checkout = CreateCube(
             "CheckoutCounter",
             new Vector3(7.5f, 0.7f, 4.5f),
             new Vector3(2.2f, 1.4f, 1.2f),
             new Color(0.95f, 0.65f, 0.1f)
         );
-        checkout.AddComponent<CheckoutSystem>();
-        checkout.AddComponent<CheckoutQueueSystem>();
 
-        Transform customerSpawn = CreatePoint("CustomerSpawn", new Vector3(-8f, 0f, 6f));
-        Transform shelfPoint = CreatePoint("CustomerShelfPoint", new Vector3(4.2f, 0f, 0f));
-        Transform checkoutPoint = CreatePoint("CustomerCheckoutPoint", new Vector3(6.3f, 0f, 4.5f));
-        Transform exitPoint = CreatePoint("CustomerExitPoint", new Vector3(-8f, 0f, 6f));
+        CheckoutQueueSystem checkoutQueue = checkout.AddComponent<CheckoutQueueSystem>();
+        checkoutQueue.checkoutPoint = checkoutPoint;
+        checkoutQueue.queueDirection = Vector3.left;
+        checkoutQueue.spacing = 1.1f;
+        checkoutQueue.maxQueue = 6;
+        checkoutQueue.serviceSeconds = 2f;
+        checkoutQueue.autoServe = true;
+        checkoutQueue.cashierAvailable = true;
+
+        CheckoutSystem checkoutSystem = checkout.AddComponent<CheckoutSystem>();
+        checkoutSystem.queueSystem = checkoutQueue;
+        checkoutSystem.queueLimit = 6;
+
+        CustomerSpawner spawner = systems.AddComponent<CustomerSpawner>();
+        spawner.autoSpawn = false;
+        spawner.spawnPoint = customerSpawn;
+        spawner.shelfPoint = shelfPoint;
+        spawner.checkoutQueue = checkoutQueue;
+        spawner.exitPoint = exitPoint;
+        spawner.maxCustomers = 6;
 
         Day01CustomerDirector director = systems.AddComponent<Day01CustomerDirector>();
         director.mission = mission;
-        director.spawnPoint = customerSpawn;
-        director.shelfPoint = shelfPoint;
-        director.checkoutPoint = checkoutPoint;
-        director.exitPoint = exitPoint;
+        director.spawner = spawner;
+        director.totalCustomers = 5;
+        director.spawnInterval = 3f;
 
         Day01HUD hud = systems.AddComponent<Day01HUD>();
         hud.mission = mission;
 
-        Debug.Log("Day01AutoInstaller: playable Day01 generated successfully.");
+        Debug.Log("Day01AutoInstaller: playable Day01 with customer checkout flow generated successfully.");
     }
 
     static GameObject CreatePlayer()
@@ -124,6 +144,7 @@ public static class Day01AutoInstaller
         visual.name = "PlayerVisual";
         visual.transform.SetParent(player.transform);
         visual.transform.localPosition = Vector3.zero;
+
         Collider visualCollider = visual.GetComponent<Collider>();
         if (visualCollider != null)
             Object.Destroy(visualCollider);
@@ -147,6 +168,7 @@ public static class Day01AutoInstaller
         }
 
         main.transform.position = target.position + new Vector3(0f, 8f, -8f);
+
         CameraFollow follow = main.gameObject.GetComponent<CameraFollow>();
         if (follow == null)
             follow = main.gameObject.AddComponent<CameraFollow>();
@@ -167,8 +189,19 @@ public static class Day01AutoInstaller
 
     static void CreateWarehouseShell()
     {
-        CreateCube("WarehouseBackWall", new Vector3(-5f, 1.5f, -5f), new Vector3(8f, 3f, 0.3f), new Color(0.55f, 0.6f, 0.65f));
-        CreateCube("WarehouseSideWall", new Vector3(-9f, 1.5f, -1.5f), new Vector3(0.3f, 3f, 7f), new Color(0.55f, 0.6f, 0.65f));
+        CreateCube(
+            "WarehouseBackWall",
+            new Vector3(-5f, 1.5f, -5f),
+            new Vector3(8f, 3f, 0.3f),
+            new Color(0.55f, 0.6f, 0.65f)
+        );
+
+        CreateCube(
+            "WarehouseSideWall",
+            new Vector3(-9f, 1.5f, -1.5f),
+            new Vector3(0.3f, 3f, 7f),
+            new Color(0.55f, 0.6f, 0.65f)
+        );
     }
 
     static GameObject CreateCube(string name, Vector3 position, Vector3 scale, Color color)
