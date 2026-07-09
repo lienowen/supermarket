@@ -19,7 +19,26 @@ public class CustomerSpawner : MonoBehaviour
         if(currentCustomers >= maxCustomers) return;
         if(customerPrefab == null || spawnPoint == null) return;
 
-        Instantiate(customerPrefab, spawnPoint.position, Quaternion.identity);
+        GameObject customer = Instantiate(customerPrefab, spawnPoint.position, Quaternion.identity);
         currentCustomers++;
+
+        CustomerLifeCycle life = customer.AddComponent<CustomerLifeCycle>();
+        life.onLeave = RemoveCustomer;
+    }
+
+    void RemoveCustomer()
+    {
+        currentCustomers--;
+    }
+}
+
+public class CustomerLifeCycle : MonoBehaviour
+{
+    public System.Action onLeave;
+
+    public void LeaveStore()
+    {
+        onLeave?.Invoke();
+        Destroy(gameObject);
     }
 }
