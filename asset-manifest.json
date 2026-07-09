@@ -1,0 +1,50 @@
+[
+  {
+    "path": "Assets/Art/Environment/Storage/warehouse_corner.png",
+    "source": "整洁的仓库存储角落.png",
+    "size_bytes": 1628356,
+    "sha256": "7db7f4b5ef5595a35123707a3035f2b9f242f7d1dd184a5191017235a22c0ccf"
+  },
+  {
+    "path": "Assets/Art/Environment/Storage/pallet_box_stack.png",
+    "source": "货架上的饮料箱堆叠.png",
+    "size_bytes": 1777441,
+    "sha256": "a9800bc68e8f0de7b15ac0931f9e8caae980607be95d7cf35cd50e72e827ef3a"
+  },
+  {
+    "path": "Assets/Art/Environment/Interior/fridge_double_drinks.png",
+    "source": "饮料展示冰柜_3d_渲染.png",
+    "size_bytes": 1464593,
+    "sha256": "012336f817ab69d24886b8a7348a7441ca2cea0fedb4ed26cc40bb59f4f9bc7c"
+  },
+  {
+    "path": "Assets/Art/Props/Promo/promo_stand_super_sale.png",
+    "source": "超值促销展示架.png",
+    "size_bytes": 1547552,
+    "sha256": "64a886ee4e9e32e648c6559bc04b49fc8db8be3bd14cfe156c2ea711395f24d0"
+  },
+  {
+    "path": "Assets/Art/Decorations/potted_plant_large.png",
+    "source": "现代绿植装饰盆栽.png",
+    "size_bytes": 1420963,
+    "sha256": "c1c36ef64448459bcaca151b832e282b7ff7315663706c36949796893a8c9857"
+  },
+  {
+    "path": "Assets/Art/Environment/Textures/floor_tile.png",
+    "source": "柔和米色瓷砖纹理.png",
+    "size_bytes": 1270671,
+    "sha256": "b17edb82283ded2769e111744f9280fb1fbf30386fc4ec3a76964670a9232487"
+  },
+  {
+    "path": "Assets/Art/Environment/Textures/wall_tile.png",
+    "source": "温暖米色木板纹理.png",
+    "size_bytes": 1013010,
+    "sha256": "623c62b4578b634328bc8a3168c280dd3c55d0cac1070abc2d8f9b440919715e"
+  },
+  {
+    "path": "Assets/Art/UI/mission_panel.png",
+    "source": "清新卡通风格3d游戏面板.png",
+    "size_bytes": 1134181,
+    "sha256": "ebaf6e6bd93b9e735961f560365671974c610d59b74f32d08c8f0a23c837b1ae"
+  }
+]

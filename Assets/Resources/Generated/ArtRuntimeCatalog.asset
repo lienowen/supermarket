@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b10c24cf8fad5c4fb34efab7ce42f94, type: 3}
   m_Name: ArtRuntimeCatalog
   m_EditorClassIdentifier: 
-  player: {fileID: 21300000, guid: 8a9153dbd719bf142a98c57859bcf500, type: 3}
+  player: {fileID: 21300000, guid: 7f971cf8c3140574fb75fa9489221146, type: 3}
+  playerIdle: {fileID: 21300000, guid: 7f971cf8c3140574fb75fa9489221146, type: 3}
+  playerCarry: {fileID: 0}
   customers:
   - {fileID: 21300000, guid: a71448e75c375e24cae6ee76680c47bd, type: 3}
   - {fileID: 21300000, guid: aa32cdd196fb2d34f8cfea9adb4b12c6, type: 3}
@@ -20,8 +22,26 @@ MonoBehaviour:
   - {fileID: 21300000, guid: d97cd49a3040fbf488de418961246717, type: 3}
   - {fileID: 21300000, guid: 1e9e867b98ff1884f8ef3261de843fa1, type: 3}
   drinkBox: {fileID: 21300000, guid: 56ae97f120538fc469f102797206b2a7, type: 3}
-  shoppingCart: {fileID: 21300000, guid: 7b1ae77db3010dc4c9c4ae091805e307, type: 3}
+  colaBox: {fileID: 21300000, guid: 56ae97f120538fc469f102797206b2a7, type: 3}
+  waterBox: {fileID: 21300000, guid: 3e227edabc95e0c4a84c43224d13b184, type: 3}
+  milkBox: {fileID: 21300000, guid: 458e35bbf4f67324ab81eb53fd5e952c, type: 3}
+  chipsBox: {fileID: 21300000, guid: ef86b910c7be62447bc5db2d1211564e, type: 3}
+  shoppingCart: {fileID: 21300000, guid: 1664625f19933754e93b34d0b5754de8, type: 3}
   drinkShelf: {fileID: 21300000, guid: 0cd6b1968d5c3784ea25433f15d12474, type: 3}
   checkoutCounter: {fileID: 21300000, guid: df2fbc3a0b7233b418f9e41b993e9e67, type: 3}
-  warehouseWall: {fileID: 21300000, guid: a50bae02158e9c24fb001cf699c96f7f, type: 3}
-  floor: {fileID: 21300000, guid: 1eb39505f619c3f4ab6b56a8ff465f16, type: 3}
+  fridgeDoubleDrinks: {fileID: 21300000, guid: cd08b366faa31c940878b40f3848cecf, type: 3}
+  warehouseCorner: {fileID: 21300000, guid: 49113cfc4be92c54bbedee45cd020ebb, type: 3}
+  palletBoxStack: {fileID: 21300000, guid: baa8e33aa7adbcb4dbb0b6e43d3e5160, type: 3}
+  promoStandSuperSale: {fileID: 21300000, guid: 68f47e773270de543a2039c6917d54ba, type: 3}
+  pottedPlantLarge: {fileID: 21300000, guid: 0118a778612c68d40a81f6901a6c81e6, type: 3}
+  warehouseWall: {fileID: 0}
+  wall: {fileID: 0}
+  floor: {fileID: 0}
+  missionPanel: {fileID: 21300000, guid: 6205af46e10ff8d4aa52e0dc6932dbb1, type: 3}
+  coinIcon: {fileID: 21300000, guid: b4bebef1776b4e04fbe98de25c8f6178, type: 3}
+  coinStack: {fileID: 21300000, guid: bd1ce65c3ff47cb4b94a22869e88b7b9, type: 3}
+  starIcon: {fileID: 21300000, guid: 1c4af45e4e04943438fad06657a154ec, type: 3}
+  timerIcon: {fileID: 21300000, guid: 31d81e6d5d87a9246aea96ef3ca38f94, type: 3}
+  buttonPlay: {fileID: 21300000, guid: 39609fe2b7f675345bc539a2d3353203, type: 3}
+  buttonUpgrade: {fileID: 21300000, guid: 47882f852275fa641a07c1fb8b36bb64, type: 3}
+  buttonNext: {fileID: 21300000, guid: 1146a87415fe8814d9dd7fca4ae05fad, type: 3}
