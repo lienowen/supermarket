@@ -40,7 +40,6 @@ public static class Day01AutoInstaller
         day.StartDay();
         state.StartGame();
 
-        // EnvironmentBuilder owns all world surfaces and applies only dedicated safe textures.
         Day01EnvironmentLayout layout = Day01EnvironmentBuilder.Build();
 
         GameObject player = CreatePlayer(layout.playerSpawn);
@@ -62,7 +61,6 @@ public static class Day01AutoInstaller
             ProductBox product = box.AddComponent<ProductBox>();
             product.productId = "cola_box";
 
-            // Keep the object genuinely 3D, then add only a small safe front label from Assets/Art.
             Procedural3DVisualFactory.ApplyDrinkBox(box);
             DesignedArtIntegration.ApplyProduct(box, product.productId);
         }
@@ -75,6 +73,7 @@ public static class Day01AutoInstaller
         );
         cart.AddComponent<CartSystem>();
         Procedural3DVisualFactory.ApplyCart(cart);
+        DesignedArtIntegration.ApplyCart(cart);
 
         GameObject shelf = CreateColliderRoot(
             "DrinkShelf",
@@ -86,6 +85,7 @@ public static class Day01AutoInstaller
         shelfSystem.capacity = 10;
         shelfSystem.category = "drink";
         Procedural3DVisualFactory.ApplyShelf(shelf);
+        DesignedArtIntegration.ApplyShelf(shelf);
 
         Transform customerSpawn = CreatePoint("CustomerSpawn", layout.customerSpawn);
         Transform shelfPoint = CreatePoint("CustomerShelfPoint", layout.customerShelfPoint);
@@ -99,6 +99,7 @@ public static class Day01AutoInstaller
             new Vector3(0f, 1.45f, 0f)
         );
         Procedural3DVisualFactory.ApplyCheckout(checkout);
+        DesignedArtIntegration.ApplyCheckout(checkout);
 
         CheckoutQueueSystem checkoutQueue = checkout.AddComponent<CheckoutQueueSystem>();
         checkoutQueue.checkoutPoint = checkoutPoint;
@@ -131,7 +132,10 @@ public static class Day01AutoInstaller
         hud.mission = mission;
         hud.director = director;
 
-        Debug.Log("Day01AutoInstaller: safe designed-art integration active. " + DesignedArtIntegration.GetBindingSummary());
+        Debug.Log(
+            "Day01AutoInstaller: designed cutouts active for product/shelf/checkout when valid assets exist. " +
+            DesignedArtIntegration.GetBindingSummary()
+        );
     }
 
     static GameObject CreatePlayer(Vector3 position)
