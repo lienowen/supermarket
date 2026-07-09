@@ -30,6 +30,23 @@ public static class DesignedArtIntegration
                 catalog.playerIdle != null);
     }
 
+    public static string GetBindingSummary()
+    {
+        ArtRuntimeCatalog catalog = Catalog;
+        if (catalog == null)
+            return "DesignedArt catalog missing";
+
+        return
+            "DesignedArt " +
+            "player=" + NameOf(catalog.playerIdle != null ? catalog.playerIdle : catalog.player) + ", " +
+            "cola=" + NameOf(catalog.colaBox) + ", " +
+            "cart=" + NameOf(catalog.shoppingCart) + ", " +
+            "shelf=" + NameOf(catalog.drinkShelf) + ", " +
+            "checkout=" + NameOf(catalog.checkoutCounter) + ", " +
+            "mission=" + NameOf(catalog.missionPanel) + ", " +
+            "coin=" + NameOf(catalog.coinIcon);
+    }
+
     public static void ApplyEnvironment(Transform environmentRoot)
     {
         if (environmentRoot == null || Catalog == null) return;
@@ -37,7 +54,7 @@ public static class DesignedArtIntegration
         ApplyTextureMaterial(
             FindDeep(environmentRoot, "MainFloor"),
             Catalog.floor,
-            new Color(0.95f, 0.95f, 0.95f),
+            new Color(0.88f, 0.88f, 0.88f),
             new Vector2(5f, 4f)
         );
 
@@ -45,19 +62,19 @@ public static class DesignedArtIntegration
         ApplyTextureMaterial(
             FindDeep(environmentRoot, "BackWall"),
             wallSprite,
-            new Color(0.92f, 0.92f, 0.92f),
+            new Color(0.86f, 0.86f, 0.86f),
             new Vector2(4f, 1f)
         );
         ApplyTextureMaterial(
             FindDeep(environmentRoot, "LeftWall"),
             wallSprite,
-            new Color(0.92f, 0.92f, 0.92f),
+            new Color(0.86f, 0.86f, 0.86f),
             new Vector2(3f, 1f)
         );
         ApplyTextureMaterial(
             FindDeep(environmentRoot, "RightWall"),
             wallSprite,
-            new Color(0.92f, 0.92f, 0.92f),
+            new Color(0.86f, 0.86f, 0.86f),
             new Vector2(3f, 1f)
         );
     }
@@ -149,9 +166,7 @@ public static class DesignedArtIntegration
     {
         Transform existing = target.transform.Find(IntegrationRoot);
         if (existing != null)
-        {
             Object.Destroy(existing.gameObject);
-        }
 
         GameObject rootObject = new GameObject(IntegrationRoot);
         rootObject.transform.SetParent(target.transform, false);
@@ -232,6 +247,9 @@ public static class DesignedArtIntegration
         Renderer renderer = target.GetComponent<Renderer>();
         if (renderer == null) return;
 
+        sprite.texture.wrapMode = TextureWrapMode.Repeat;
+        sprite.texture.filterMode = FilterMode.Bilinear;
+
         Shader shader = Shader.Find("Standard");
         if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
         if (shader == null) shader = Shader.Find("Sprites/Default");
@@ -262,5 +280,10 @@ public static class DesignedArtIntegration
         }
 
         return null;
+    }
+
+    private static string NameOf(Sprite sprite)
+    {
+        return sprite != null ? sprite.name : "none";
     }
 }
