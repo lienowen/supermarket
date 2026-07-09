@@ -8,7 +8,7 @@ public static class Day01AutoInstaller
     {
         Scene scene = SceneManager.GetActiveScene();
         if (scene.name != "Day01") return;
-        if (Object.FindObjectOfType<PlayerController>() != null) return;
+        if (Object.FindObjectOfType<Day01TapFlowController>() != null) return;
 
         BuildPlayableDay01();
     }
@@ -22,7 +22,7 @@ public static class Day01AutoInstaller
         systems.AddComponent<ScoreSystem>();
 
         MissionSystem mission = systems.AddComponent<MissionSystem>();
-        mission.targetAmount = 10;
+        mission.targetAmount = 6;
         mission.reward = 200;
 
         GameStateManager state = systems.AddComponent<GameStateManager>();
@@ -41,15 +41,13 @@ public static class Day01AutoInstaller
         state.StartGame();
 
         Day01EnvironmentLayout layout = Day01EnvironmentBuilder.Build();
+        Camera gameplayCamera = ConfigureFixedCamera();
 
-        GameObject player = CreatePlayer(layout.playerSpawn);
-        CreateCamera(player.transform);
-
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 6; i++)
         {
-            int column = i % 5;
-            int row = i / 5;
-            Vector3 position = layout.boxOrigin + new Vector3(column * 0.92f, 0f, row * 0.82f);
+            int column = i % 3;
+            int row = i / 3;
+            Vector3 position = layout.boxOrigin + new Vector3(column * 1.02f, 0f, row * 0.9f);
 
             GameObject box = CreateColliderRoot(
                 "DrinkBox_" + (i + 1),
@@ -65,27 +63,27 @@ public static class Day01AutoInstaller
             DesignedArtIntegration.ApplyProduct(box, product.productId);
         }
 
-        GameObject cart = CreateColliderRoot(
+        GameObject cartObject = CreateColliderRoot(
             "ShoppingCart",
             layout.cartPosition,
             new Vector3(1.25f, 1.9f, 1f),
             new Vector3(0f, 0.95f, 0f)
         );
-        cart.AddComponent<CartSystem>();
-        Procedural3DVisualFactory.ApplyCart(cart);
-        DesignedArtIntegration.ApplyCart(cart);
+        CartSystem cart = cartObject.AddComponent<CartSystem>();
+        Procedural3DVisualFactory.ApplyCart(cartObject);
+        DesignedArtIntegration.ApplyCart(cartObject);
 
-        GameObject shelf = CreateColliderRoot(
+        GameObject shelfObject = CreateColliderRoot(
             "DrinkShelf",
             layout.shelfPosition,
             new Vector3(2.2f, 3.2f, 1f),
             new Vector3(0f, 1.6f, 0f)
         );
-        ShelfSystem shelfSystem = shelf.AddComponent<ShelfSystem>();
-        shelfSystem.capacity = 10;
-        shelfSystem.category = "drink";
-        Procedural3DVisualFactory.ApplyShelf(shelf);
-        DesignedArtIntegration.ApplyShelf(shelf);
+        ShelfSystem shelf = shelfObject.AddComponent<ShelfSystem>();
+        shelf.capacity = 6;
+        shelf.category = "drink";
+        Procedural3DVisualFactory.ApplyShelf(shelfObject);
+        DesignedArtIntegration.ApplyShelf(shelfObject);
 
         Transform customerSpawn = CreatePoint("CustomerSpawn", layout.customerSpawn);
         Transform shelfPoint = CreatePoint("CustomerShelfPoint", layout.customerShelfPoint);
@@ -128,47 +126,25 @@ public static class Day01AutoInstaller
         director.totalCustomers = 5;
         director.spawnInterval = 3f;
 
+        Day01TapFlowController tapFlow = systems.AddComponent<Day01TapFlowController>();
+        tapFlow.gameplayCamera = gameplayCamera;
+        tapFlow.cart = cart;
+        tapFlow.shelf = shelf;
+        tapFlow.mission = mission;
+
         Day01HUD hud = systems.AddComponent<Day01HUD>();
         hud.mission = mission;
         hud.director = director;
-
-        int decorationCount = Day01DesignedDecorationBuilder.Build(layout);
+        hud.tapFlow = tapFlow;
 
         Debug.Log(
-            "Day01AutoInstaller: designed cutouts active. " +
-            "OptionalDecorations=" + decorationCount + ". " +
+            "Day01AutoInstaller: fixed-camera tap flow active. " +
+            "Third-person WASD interaction disabled for Day01. " +
             DesignedArtIntegration.GetBindingSummary()
         );
     }
 
-    static GameObject CreatePlayer(Vector3 position)
-    {
-        GameObject player = new GameObject("Player");
-        player.tag = "Player";
-        player.transform.position = position;
-
-        CharacterController controller = player.AddComponent<CharacterController>();
-        controller.height = 2.3f;
-        controller.radius = 0.42f;
-        controller.center = new Vector3(0f, 1.15f, 0f);
-
-        player.AddComponent<PlayerController>();
-        player.AddComponent<InteractionSystem>();
-
-        CarrySystem carry = player.AddComponent<CarrySystem>();
-        GameObject carryPoint = new GameObject("CarryPoint");
-        carryPoint.transform.SetParent(player.transform);
-        carryPoint.transform.localPosition = new Vector3(0f, 1.28f, 0.82f);
-        carry.carryPoint = carryPoint.transform;
-
-        // Keep the procedural model only as a fallback. When player art exists the designed
-        // character controller hides the block model but preserves movement/collision/gameplay.
-        Procedural3DVisualFactory.ApplyPlayer(player);
-        DesignedCharacterVisual.ApplyPlayer(player);
-        return player;
-    }
-
-    static void CreateCamera(Transform target)
+    static Camera ConfigureFixedCamera()
     {
         Camera main = Camera.main;
         if (main == null)
@@ -179,31 +155,26 @@ public static class Day01AutoInstaller
             cameraObject.AddComponent<AudioListener>();
         }
 
-        main.fieldOfView = 46f;
-        main.nearClipPlane = 0.1f;
-        main.farClipPlane = 180f;
-        main.clearFlags = CameraClearFlags.SolidColor;
-        main.backgroundColor = new Color(0.48f, 0.65f, 0.78f);
-
         CameraFollow oldFollow = main.GetComponent<CameraFollow>();
         if (oldFollow != null)
             oldFollow.enabled = false;
 
-        StylizedCameraRig rig = main.GetComponent<StylizedCameraRig>();
-        if (rig == null)
-            rig = main.gameObject.AddComponent<StylizedCameraRig>();
+        StylizedCameraRig oldRig = main.GetComponent<StylizedCameraRig>();
+        if (oldRig != null)
+            oldRig.enabled = false;
 
-        rig.target = target;
-        rig.targetOffset = new Vector3(0f, 1.1f, 0f);
-        rig.distance = 10.5f;
-        rig.height = 6.2f;
-        rig.yaw = 28f;
-        rig.positionSmooth = 7f;
-        rig.rotationSmooth = 10f;
+        main.orthographic = true;
+        main.orthographicSize = 10.4f;
+        main.nearClipPlane = 0.1f;
+        main.farClipPlane = 200f;
+        main.clearFlags = CameraClearFlags.SolidColor;
+        main.backgroundColor = new Color(0.12f, 0.16f, 0.18f);
 
-        Vector3 focus = target.position + rig.targetOffset;
-        main.transform.position = focus + Quaternion.Euler(0f, rig.yaw, 0f) * new Vector3(0f, rig.height, -rig.distance);
+        Vector3 focus = new Vector3(0f, 0.7f, 0.2f);
+        main.transform.position = new Vector3(0f, 15.5f, -16.5f);
         main.transform.LookAt(focus);
+
+        return main;
     }
 
     static GameObject CreateColliderRoot(
