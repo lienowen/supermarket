@@ -20,6 +20,7 @@ public class Day01HUD : MonoBehaviour
 
     private Texture2D missionPanelArt;
     private Texture2D coinArt;
+    private Texture2D coinStackArt;
     private Texture2D playerPortraitArt;
     private Texture2D productArt;
     private Texture2D shelfArt;
@@ -145,23 +146,47 @@ public class Day01HUD : MonoBehaviour
         if (mission == null || !mission.completed) return;
 
         bool finished = director != null && director.IsWaveFinished();
-        float bannerWidth = 420f;
+        float bannerWidth = finished && coinStackArt != null ? 500f : 420f;
         float x = screenWidth * 0.5f - bannerWidth * 0.5f;
 
-        GUI.Box(new Rect(x, 24f, bannerWidth, 86f), GUIContent.none, panelStyle);
-        GUI.DrawTexture(new Rect(x, 24f, 8f, 86f), accentTexture);
+        GUI.Box(new Rect(x, 24f, bannerWidth, 92f), GUIContent.none, panelStyle);
+        GUI.DrawTexture(new Rect(x, 24f, 8f, 92f), accentTexture);
+
+        float textOffset = 28f;
+        if (finished && coinStackArt != null)
+        {
+            GUI.DrawTexture(
+                new Rect(x + 22f, 31f, 78f, 72f),
+                coinStackArt,
+                ScaleMode.ScaleToFit,
+                true
+            );
+            textOffset = 104f;
+        }
 
         if (finished)
         {
-            GUI.Label(new Rect(x + 28f, 36f, bannerWidth - 50f, 28f), "DAY COMPLETE", centerTitleStyle);
-            GUI.Label(new Rect(x + 28f, 68f, bannerWidth - 50f, 24f), "All customers checked out", centerLabelStyle);
+            GUI.Label(
+                new Rect(x + textOffset, 36f, bannerWidth - textOffset - 22f, 28f),
+                "DAY COMPLETE",
+                centerTitleStyle
+            );
+            GUI.Label(
+                new Rect(x + textOffset, 70f, bannerWidth - textOffset - 22f, 24f),
+                "All customers checked out",
+                centerLabelStyle
+            );
             return;
         }
 
         int served = director != null ? director.GetCompletedCustomers() : 0;
         int total = director != null ? director.totalCustomers : 0;
         GUI.Label(new Rect(x + 28f, 36f, bannerWidth - 50f, 28f), "STORE OPEN", centerTitleStyle);
-        GUI.Label(new Rect(x + 28f, 68f, bannerWidth - 50f, 24f), "Checkout progress  " + served + "/" + total, centerLabelStyle);
+        GUI.Label(
+            new Rect(x + 28f, 70f, bannerWidth - 50f, 24f),
+            "Checkout progress  " + served + "/" + total,
+            centerLabelStyle
+        );
     }
 
     private void LoadDesignedArt()
@@ -171,6 +196,7 @@ public class Day01HUD : MonoBehaviour
 
         missionPanelArt = DesignedArtIntegration.GetTexture(catalog.missionPanel);
         coinArt = DesignedArtIntegration.GetTexture(catalog.coinIcon);
+        coinStackArt = DesignedArtIntegration.GetTexture(catalog.coinStack);
         playerPortraitArt = DesignedArtIntegration.GetTexture(
             catalog.playerIdle != null ? catalog.playerIdle : catalog.player
         );
