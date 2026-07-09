@@ -132,8 +132,11 @@ public static class Day01AutoInstaller
         hud.mission = mission;
         hud.director = director;
 
+        int decorationCount = Day01DesignedDecorationBuilder.Build(layout);
+
         Debug.Log(
-            "Day01AutoInstaller: designed cutouts active for product/shelf/checkout when valid assets exist. " +
+            "Day01AutoInstaller: designed cutouts active. " +
+            "OptionalDecorations=" + decorationCount + ". " +
             DesignedArtIntegration.GetBindingSummary()
         );
     }
