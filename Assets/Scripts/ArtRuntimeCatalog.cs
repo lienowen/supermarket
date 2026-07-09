@@ -20,6 +20,13 @@ public class ArtRuntimeCatalog : ScriptableObject
     public Sprite shoppingCart;
     public Sprite drinkShelf;
     public Sprite checkoutCounter;
+    public Sprite fridgeDoubleDrinks;
+
+    [Header("Day01 Decorations")]
+    public Sprite warehouseCorner;
+    public Sprite palletBoxStack;
+    public Sprite promoStandSuperSale;
+    public Sprite pottedPlantLarge;
 
     [Header("Environment")]
     public Sprite warehouseWall;
@@ -29,6 +36,7 @@ public class ArtRuntimeCatalog : ScriptableObject
     [Header("UI")]
     public Sprite missionPanel;
     public Sprite coinIcon;
+    public Sprite coinStack;
     public Sprite starIcon;
     public Sprite timerIcon;
     public Sprite buttonPlay;
