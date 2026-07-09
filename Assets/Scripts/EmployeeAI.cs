@@ -48,10 +48,8 @@ public class EmployeeAI : MonoBehaviour
     void ServeCheckout()
     {
         CheckoutQueueSystem queue = FindObjectOfType<CheckoutQueueSystem>();
-        if (queue == null) return;
+        if (queue == null || queue.QueueCount == 0) return;
 
-        CustomerAI customer = queue.GetNext();
-        if (customer != null)
-            customer.state = CustomerState.Checkout;
+        queue.ServeNextNow();
     }
 }
