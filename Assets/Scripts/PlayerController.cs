@@ -19,9 +19,18 @@ public class PlayerController : MonoBehaviour
         Vector3 move = new Vector3(h, 0, v);
         float speed = Input.GetKey(KeyCode.LeftShift) ? runSpeed : moveSpeed;
 
-        controller.Move(move.normalized * speed * Time.deltaTime);
+        if(controller != null)
+        {
+            controller.Move(move.normalized * speed * Time.deltaTime);
+        }
+        else
+        {
+            transform.position += move.normalized * speed * Time.deltaTime;
+        }
 
         if(move.magnitude > 0)
+        {
             transform.forward = move;
+        }
     }
 }
