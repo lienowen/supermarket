@@ -21,6 +21,8 @@ public class Day01HUD : MonoBehaviour
     private Texture2D missionPanelArt;
     private Texture2D coinArt;
     private Texture2D playerPortraitArt;
+    private Texture2D productArt;
+    private Texture2D shelfArt;
 
     void Awake()
     {
@@ -41,7 +43,7 @@ public class Day01HUD : MonoBehaviour
         if (panelStyle == null)
             BuildStyles();
 
-        if (missionPanelArt == null && coinArt == null)
+        if (productArt == null && coinArt == null)
             LoadDesignedArt();
 
         float scale = Mathf.Clamp(Screen.height / 900f, 0.75f, 1.25f);
@@ -96,30 +98,40 @@ public class Day01HUD : MonoBehaviour
 
     private void DrawMissionCard()
     {
-        Rect card = new Rect(24f, 78f, 340f, 126f);
+        Rect card = new Rect(24f, 78f, 420f, 142f);
 
         if (missionPanelArt != null)
-        {
             GUI.DrawTexture(card, missionPanelArt, ScaleMode.StretchToFill, true);
-        }
         else
-        {
             GUI.Box(card, GUIContent.none, panelStyle);
+
+        Rect artFrame = new Rect(38f, 91f, 86f, 86f);
+        GUI.Box(artFrame, GUIContent.none, panelStyle);
+
+        Texture2D preview = productArt != null ? productArt : shelfArt;
+        if (preview != null)
+        {
+            GUI.DrawTexture(
+                new Rect(43f, 96f, 76f, 76f),
+                preview,
+                ScaleMode.ScaleToFit,
+                true
+            );
         }
 
-        GUI.Label(new Rect(42f, 92f, 290f, 28f), "MORNING SHIFT", titleStyle);
-        GUI.Label(new Rect(42f, 124f, 290f, 24f), "Restock the drink shelf", labelStyle);
+        GUI.Label(new Rect(138f, 91f, 260f, 28f), "MORNING SHIFT", titleStyle);
+        GUI.Label(new Rect(138f, 123f, 260f, 24f), "Restock the drink shelf", labelStyle);
 
         int current = mission != null ? mission.currentAmount : 0;
         int target = mission != null ? Mathf.Max(1, mission.targetAmount) : 10;
         float progress = Mathf.Clamp01((float)current / target);
 
-        GUI.DrawTexture(new Rect(42f, 158f, 250f, 14f), progressBackTexture);
-        GUI.DrawTexture(new Rect(42f, 158f, 250f * progress, 14f), progressFillTexture);
-        GUI.Label(new Rect(300f, 150f, 48f, 28f), current + "/" + target, smallStyle);
+        GUI.DrawTexture(new Rect(138f, 158f, 205f, 14f), progressBackTexture);
+        GUI.DrawTexture(new Rect(138f, 158f, 205f * progress, 14f), progressFillTexture);
+        GUI.Label(new Rect(350f, 150f, 52f, 28f), current + "/" + target, smallStyle);
 
         if (mission != null && mission.reward > 0)
-            GUI.Label(new Rect(42f, 177f, 290f, 20f), "Reward  +$" + mission.reward, smallStyle);
+            GUI.Label(new Rect(138f, 181f, 250f, 20f), "Reward  +$" + mission.reward, smallStyle);
     }
 
     private void DrawControlHint(float screenHeight)
@@ -162,6 +174,10 @@ public class Day01HUD : MonoBehaviour
         playerPortraitArt = DesignedArtIntegration.GetTexture(
             catalog.playerIdle != null ? catalog.playerIdle : catalog.player
         );
+        productArt = DesignedArtIntegration.GetTexture(
+            catalog.colaBox != null ? catalog.colaBox : catalog.drinkBox
+        );
+        shelfArt = DesignedArtIntegration.GetTexture(catalog.drinkShelf);
     }
 
     private void BuildStyles()
