@@ -81,6 +81,11 @@ public static class Day01AutoInstaller
         shelf.category = "drink";
         DesignedArtIntegration.ApplyShelf(shelfObject);
 
+        ArtRuntimeCatalog art = DesignedArtIntegration.Catalog;
+        Sprite stockSprite = art != null ? (art.colaBox != null ? art.colaBox : art.drinkBox) : null;
+        ShelfStockVisual stockVisual = shelfObject.AddComponent<ShelfStockVisual>();
+        stockVisual.Configure(shelf, stockSprite, 6);
+
         Transform customerSpawn = CreatePoint("CustomerSpawn", layout.customerSpawn);
         Transform shelfPoint = CreatePoint("CustomerShelfPoint", layout.customerShelfPoint);
         Transform checkoutPoint = CreatePoint("CustomerCheckoutPoint", layout.customerCheckoutPoint);
