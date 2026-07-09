@@ -7,6 +7,8 @@ using UnityEngine;
 /// </summary>
 public class Day01ScreenPresentation : MonoBehaviour
 {
+    private const int VisibleShelfSlots = 6;
+
     public Day01TapFlowController tapFlow;
     public CartSystem cart;
     public ShelfSystem shelf;
@@ -18,6 +20,8 @@ public class Day01ScreenPresentation : MonoBehaviour
     private GUIStyle missingStyle;
     private ProductBox[] boxes = Array.Empty<ProductBox>();
     private CustomerAI[] customers = Array.Empty<CustomerAI>();
+    private readonly bool[] shelfSlots = new bool[VisibleShelfSlots];
+    private int lastObservedShelfCount = -1;
     private float refreshTimer;
 
     public Rect PlayRect
@@ -51,6 +55,7 @@ public class Day01ScreenPresentation : MonoBehaviour
         solid.Apply();
         BuildStyles();
         RefreshObjects();
+        SyncShelfSlots(true);
     }
 
     void OnDestroy()
@@ -66,6 +71,8 @@ public class Day01ScreenPresentation : MonoBehaviour
             refreshTimer = 0.25f;
             RefreshObjects();
         }
+
+        SyncShelfSlots(false);
     }
 
     void OnGUI()
@@ -128,6 +135,37 @@ public class Day01ScreenPresentation : MonoBehaviour
         return ShelfRect.Contains(p);
     }
 
+    public bool TryGetMissingShelfSlotAt(Vector2 screenPosition, out int slotIndex)
+    {
+        slotIndex = -1;
+        SyncShelfSlots(false);
+
+        Vector2 p = new Vector2(screenPosition.x, Screen.height - screenPosition.y);
+        Rect shelfRect = ShelfRect;
+        for (int i = 0; i < VisibleShelfSlots; i++)
+        {
+            if (shelfSlots[i]) continue;
+            if (!GetShelfSlotRect(shelfRect, i).Contains(p)) continue;
+
+            slotIndex = i;
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool MarkShelfSlotRestocked(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= VisibleShelfSlots) return false;
+        if (shelfSlots[slotIndex]) return false;
+
+        shelfSlots[slotIndex] = true;
+        lastObservedShelfCount = shelf != null
+            ? Mathf.Clamp(shelf.currentCount, 0, VisibleShelfSlots)
+            : CountFilledShelfSlots();
+        return true;
+    }
+
     public ProductBox GetBoxByIndex(int index)
     {
         if (boxes == null || index < 0 || index >= boxes.Length) return null;
@@ -162,35 +200,19 @@ public class Day01ScreenPresentation : MonoBehaviour
 
     void DrawShelf()
     {
+        SyncShelfSlots(false);
+
         Rect r = ShelfRect;
         DrawSprite(art != null ? art.drinkShelf : null, r, ScaleMode.ScaleToFit);
 
-        int count = shelf != null ? Mathf.Clamp(shelf.currentCount, 0, 6) : 0;
         Sprite product = art != null ? (art.colaBox != null ? art.colaBox : art.drinkBox) : null;
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < VisibleShelfSlots; i++)
         {
-            int col = i % 3;
-            int row = i / 3;
-            Rect p = new Rect(
-                r.x + r.width * (0.21f + col * 0.20f),
-                r.y + r.height * (0.30f + row * 0.24f),
-                r.width * 0.16f,
-                r.height * 0.20f
-            );
-            DrawSprite(product, p, ScaleMode.ScaleToFit);
-        }
-
-        for (int i = count; i < 6; i++)
-        {
-            int col = i % 3;
-            int row = i / 3;
-            Rect m = new Rect(
-                r.x + r.width * (0.20f + col * 0.20f),
-                r.y + r.height * (0.29f + row * 0.24f),
-                r.width * 0.17f,
-                r.height * 0.21f
-            );
-            GUI.Box(m, "MISSING", missingStyle);
+            Rect slot = GetShelfSlotRect(r, i);
+            if (shelfSlots[i])
+                DrawSprite(product, slot, ScaleMode.ScaleToFit);
+            else
+                GUI.Box(slot, "MISSING", missingStyle);
         }
     }
 
@@ -221,11 +243,79 @@ public class Day01ScreenPresentation : MonoBehaviour
         customers = FindObjectsOfType<CustomerAI>();
     }
 
+    void SyncShelfSlots(bool force)
+    {
+        int observedCount = shelf != null ? Mathf.Clamp(shelf.currentCount, 0, VisibleShelfSlots) : 0;
+        if (!force && observedCount == lastObservedShelfCount) return;
+
+        if (force)
+        {
+            for (int i = 0; i < VisibleShelfSlots; i++)
+                shelfSlots[i] = i < observedCount;
+
+            lastObservedShelfCount = observedCount;
+            return;
+        }
+
+        int filled = CountFilledShelfSlots();
+        while (filled < observedCount)
+        {
+            int empty = FindFirstEmptyShelfSlot();
+            if (empty < 0) break;
+            shelfSlots[empty] = true;
+            filled++;
+        }
+
+        while (filled > observedCount)
+        {
+            int occupied = FindLastFilledShelfSlot();
+            if (occupied < 0) break;
+            shelfSlots[occupied] = false;
+            filled--;
+        }
+
+        lastObservedShelfCount = observedCount;
+    }
+
+    int CountFilledShelfSlots()
+    {
+        int count = 0;
+        for (int i = 0; i < shelfSlots.Length; i++)
+            if (shelfSlots[i]) count++;
+        return count;
+    }
+
+    int FindFirstEmptyShelfSlot()
+    {
+        for (int i = 0; i < shelfSlots.Length; i++)
+            if (!shelfSlots[i]) return i;
+        return -1;
+    }
+
+    int FindLastFilledShelfSlot()
+    {
+        for (int i = shelfSlots.Length - 1; i >= 0; i--)
+            if (shelfSlots[i]) return i;
+        return -1;
+    }
+
     Rect GetBoxRect(Rect play, int index)
     {
         int col = index % 3;
         int row = index / 3;
         return N(play, 0.055f + col * 0.115f, 0.61f + row * 0.18f, 0.12f, 0.18f);
+    }
+
+    Rect GetShelfSlotRect(Rect shelfRect, int index)
+    {
+        int col = index % 3;
+        int row = index / 3;
+        return new Rect(
+            shelfRect.x + shelfRect.width * (0.20f + col * 0.20f),
+            shelfRect.y + shelfRect.height * (0.29f + row * 0.24f),
+            shelfRect.width * 0.17f,
+            shelfRect.height * 0.21f
+        );
     }
 
     void DrawZoneLabel(Rect rect, string text, Color color)
