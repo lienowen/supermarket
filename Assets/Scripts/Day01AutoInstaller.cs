@@ -43,6 +43,7 @@ public static class Day01AutoInstaller
         Camera gameplayCamera = ConfigureFixedCamera();
         Day01EnvironmentLayout layout = Day01StaticStageBuilder.Build();
 
+        // Logical objects only. Day01ScreenPresentation draws the visible scene.
         for (int i = 0; i < 6; i++)
         {
             int column = i % 3;
@@ -58,7 +59,6 @@ public static class Day01AutoInstaller
 
             ProductBox product = box.AddComponent<ProductBox>();
             product.productId = "cola_box";
-            DesignedArtIntegration.ApplyProduct(box, product.productId);
         }
 
         GameObject cartObject = CreateColliderRoot(
@@ -68,7 +68,7 @@ public static class Day01AutoInstaller
             new Vector3(0f, 1f, 0f)
         );
         CartSystem cart = cartObject.AddComponent<CartSystem>();
-        DesignedArtIntegration.ApplyCart(cartObject);
+        cart.capacity = 6;
 
         GameObject shelfObject = CreateColliderRoot(
             "DrinkShelf",
@@ -79,12 +79,6 @@ public static class Day01AutoInstaller
         ShelfSystem shelf = shelfObject.AddComponent<ShelfSystem>();
         shelf.capacity = 6;
         shelf.category = "drink";
-        DesignedArtIntegration.ApplyShelf(shelfObject);
-
-        ArtRuntimeCatalog art = DesignedArtIntegration.Catalog;
-        Sprite stockSprite = art != null ? (art.colaBox != null ? art.colaBox : art.drinkBox) : null;
-        ShelfStockVisual stockVisual = shelfObject.AddComponent<ShelfStockVisual>();
-        stockVisual.Configure(shelf, stockSprite, 6);
 
         Transform customerSpawn = CreatePoint("CustomerSpawn", layout.customerSpawn);
         Transform shelfPoint = CreatePoint("CustomerShelfPoint", layout.customerShelfPoint);
@@ -97,7 +91,6 @@ public static class Day01AutoInstaller
             new Vector3(2.8f, 3.1f, 1.4f),
             new Vector3(0f, 1.5f, 0f)
         );
-        DesignedArtIntegration.ApplyCheckout(checkout);
 
         CheckoutQueueSystem checkoutQueue = checkout.AddComponent<CheckoutQueueSystem>();
         checkoutQueue.checkoutPoint = checkoutPoint;
@@ -114,6 +107,7 @@ public static class Day01AutoInstaller
 
         CustomerSpawner spawner = systems.AddComponent<CustomerSpawner>();
         spawner.autoSpawn = false;
+        spawner.createWorldVisuals = false;
         spawner.spawnPoint = customerSpawn;
         spawner.shelfPoint = shelfPoint;
         spawner.checkoutQueue = checkoutQueue;
@@ -132,6 +126,12 @@ public static class Day01AutoInstaller
         tapFlow.shelf = shelf;
         tapFlow.mission = mission;
 
+        Day01ScreenPresentation presentation = systems.AddComponent<Day01ScreenPresentation>();
+        presentation.tapFlow = tapFlow;
+        presentation.cart = cart;
+        presentation.shelf = shelf;
+        tapFlow.presentation = presentation;
+
         Day01HUD hud = systems.AddComponent<Day01HUD>();
         hud.mission = mission;
         hud.director = director;
@@ -141,10 +141,7 @@ public static class Day01AutoInstaller
         saleFeedback.gameplayCamera = gameplayCamera;
         saleFeedback.checkoutAnchor = checkout.transform;
 
-        Debug.Log(
-            "Day01AutoInstaller: static stage + tap flow active. " +
-            DesignedArtIntegration.GetBindingSummary()
-        );
+        Debug.Log("Day01AutoInstaller: coherent screen-space management presentation active.");
     }
 
     static Camera ConfigureFixedCamera()
@@ -171,7 +168,7 @@ public static class Day01AutoInstaller
         main.nearClipPlane = 0.1f;
         main.farClipPlane = 200f;
         main.clearFlags = CameraClearFlags.SolidColor;
-        main.backgroundColor = new Color(0.12f, 0.16f, 0.18f);
+        main.backgroundColor = new Color(0.06f, 0.08f, 0.09f);
 
         Vector3 focus = new Vector3(0f, 0.8f, 0.3f);
         main.transform.position = new Vector3(0f, 15.8f, -16.8f);
