@@ -4,6 +4,7 @@ public class Day01HUD : MonoBehaviour
 {
     public MissionSystem mission;
     public Day01CustomerDirector director;
+    public Day01TapFlowController tapFlow;
 
     private GUIStyle panelStyle;
     private GUIStyle titleStyle;
@@ -47,7 +48,7 @@ public class Day01HUD : MonoBehaviour
         if (productArt == null && coinArt == null)
             LoadDesignedArt();
 
-        float scale = Mathf.Clamp(Screen.height / 900f, 0.75f, 1.25f);
+        float scale = Mathf.Clamp(Screen.height / 900f, 0.72f, 1.25f);
         Matrix4x4 previous = GUI.matrix;
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one * scale);
 
@@ -56,7 +57,7 @@ public class Day01HUD : MonoBehaviour
 
         DrawTopHUD(width);
         DrawMissionCard();
-        DrawControlHint(height);
+        DrawTapHint(height);
         DrawCompletionBanner(width);
 
         GUI.matrix = previous;
@@ -64,81 +65,66 @@ public class Day01HUD : MonoBehaviour
 
     private void DrawTopHUD(float screenWidth)
     {
-        GUI.Box(new Rect(24f, 20f, 150f, 42f), GUIContent.none, panelStyle);
-        GUI.Label(new Rect(38f, 27f, 130f, 28f), "DAY 1", titleStyle);
+        GUI.Box(new Rect(24f, 20f, 210f, 50f), GUIContent.none, panelStyle);
+        GUI.Label(new Rect(38f, 27f, 182f, 30f), "☀  MORNING SHIFT", titleStyle);
 
         if (playerPortraitArt != null)
         {
-            GUI.Box(new Rect(184f, 20f, 42f, 42f), GUIContent.none, panelStyle);
-            GUI.DrawTexture(
-                new Rect(190f, 23f, 30f, 36f),
-                playerPortraitArt,
-                ScaleMode.ScaleToFit,
-                true
-            );
+            GUI.Box(new Rect(244f, 20f, 50f, 50f), GUIContent.none, panelStyle);
+            GUI.DrawTexture(new Rect(250f, 24f, 38f, 42f), playerPortraitArt, ScaleMode.ScaleToFit, true);
         }
 
         int money = EconomySystem.Instance != null ? EconomySystem.Instance.money : 0;
-        GUI.Box(new Rect(screenWidth - 190f, 20f, 166f, 42f), GUIContent.none, panelStyle);
+        GUI.Box(new Rect(screenWidth - 190f, 20f, 166f, 50f), GUIContent.none, panelStyle);
 
         if (coinArt != null)
         {
-            GUI.DrawTexture(
-                new Rect(screenWidth - 178f, 26f, 30f, 30f),
-                coinArt,
-                ScaleMode.ScaleToFit,
-                true
-            );
-            GUI.Label(new Rect(screenWidth - 146f, 27f, 110f, 28f), money.ToString(), moneyStyle);
+            GUI.DrawTexture(new Rect(screenWidth - 178f, 29f, 32f, 32f), coinArt, ScaleMode.ScaleToFit, true);
+            GUI.Label(new Rect(screenWidth - 140f, 29f, 104f, 30f), money.ToString(), moneyStyle);
         }
         else
         {
-            GUI.Label(new Rect(screenWidth - 174f, 27f, 140f, 28f), "$ " + money, moneyStyle);
+            GUI.Label(new Rect(screenWidth - 174f, 29f, 140f, 30f), "$ " + money, moneyStyle);
         }
     }
 
     private void DrawMissionCard()
     {
-        Rect card = new Rect(24f, 78f, 420f, 142f);
+        Rect card = new Rect(24f, 82f, 430f, 150f);
 
         if (missionPanelArt != null)
             GUI.DrawTexture(card, missionPanelArt, ScaleMode.StretchToFill, true);
         else
             GUI.Box(card, GUIContent.none, panelStyle);
 
-        Rect artFrame = new Rect(38f, 91f, 86f, 86f);
+        Rect artFrame = new Rect(38f, 96f, 88f, 88f);
         GUI.Box(artFrame, GUIContent.none, panelStyle);
 
         Texture2D preview = productArt != null ? productArt : shelfArt;
         if (preview != null)
-        {
-            GUI.DrawTexture(
-                new Rect(43f, 96f, 76f, 76f),
-                preview,
-                ScaleMode.ScaleToFit,
-                true
-            );
-        }
+            GUI.DrawTexture(new Rect(44f, 102f, 76f, 76f), preview, ScaleMode.ScaleToFit, true);
 
-        GUI.Label(new Rect(138f, 91f, 260f, 28f), "MORNING SHIFT", titleStyle);
-        GUI.Label(new Rect(138f, 123f, 260f, 24f), "Restock the drink shelf", labelStyle);
+        GUI.Label(new Rect(140f, 96f, 270f, 30f), "RESTOCK DRINKS", titleStyle);
+        GUI.Label(new Rect(140f, 128f, 270f, 24f), "Tap boxes → cart → shelf", labelStyle);
 
         int current = mission != null ? mission.currentAmount : 0;
-        int target = mission != null ? Mathf.Max(1, mission.targetAmount) : 10;
+        int target = mission != null ? Mathf.Max(1, mission.targetAmount) : 6;
         float progress = Mathf.Clamp01((float)current / target);
 
-        GUI.DrawTexture(new Rect(138f, 158f, 205f, 14f), progressBackTexture);
-        GUI.DrawTexture(new Rect(138f, 158f, 205f * progress, 14f), progressFillTexture);
-        GUI.Label(new Rect(350f, 150f, 52f, 28f), current + "/" + target, smallStyle);
+        GUI.DrawTexture(new Rect(140f, 164f, 210f, 14f), progressBackTexture);
+        GUI.DrawTexture(new Rect(140f, 164f, 210f * progress, 14f), progressFillTexture);
+        GUI.Label(new Rect(360f, 156f, 58f, 28f), current + "/" + target, smallStyle);
 
         if (mission != null && mission.reward > 0)
-            GUI.Label(new Rect(138f, 181f, 250f, 20f), "Reward  +$" + mission.reward, smallStyle);
+            GUI.Label(new Rect(140f, 188f, 250f, 22f), "Reward  +$" + mission.reward, smallStyle);
     }
 
-    private void DrawControlHint(float screenHeight)
+    private void DrawTapHint(float screenHeight)
     {
-        GUI.Box(new Rect(24f, screenHeight - 64f, 350f, 40f), GUIContent.none, panelStyle);
-        GUI.Label(new Rect(40f, screenHeight - 56f, 330f, 26f), "WASD Move   •   E Interact   •   Shift Run", smallStyle);
+        string hint = tapFlow != null ? tapFlow.CurrentHint : "Tap objects to interact";
+        GUI.Box(new Rect(24f, screenHeight - 70f, 520f, 46f), GUIContent.none, panelStyle);
+        GUI.DrawTexture(new Rect(24f, screenHeight - 70f, 7f, 46f), accentTexture);
+        GUI.Label(new Rect(42f, screenHeight - 61f, 490f, 28f), hint, smallStyle);
     }
 
     private void DrawCompletionBanner(float screenWidth)
@@ -146,7 +132,7 @@ public class Day01HUD : MonoBehaviour
         if (mission == null || !mission.completed) return;
 
         bool finished = director != null && director.IsWaveFinished();
-        float bannerWidth = finished && coinStackArt != null ? 500f : 420f;
+        float bannerWidth = finished && coinStackArt != null ? 500f : 440f;
         float x = screenWidth * 0.5f - bannerWidth * 0.5f;
 
         GUI.Box(new Rect(x, 24f, bannerWidth, 92f), GUIContent.none, panelStyle);
@@ -155,38 +141,21 @@ public class Day01HUD : MonoBehaviour
         float textOffset = 28f;
         if (finished && coinStackArt != null)
         {
-            GUI.DrawTexture(
-                new Rect(x + 22f, 31f, 78f, 72f),
-                coinStackArt,
-                ScaleMode.ScaleToFit,
-                true
-            );
+            GUI.DrawTexture(new Rect(x + 22f, 31f, 78f, 72f), coinStackArt, ScaleMode.ScaleToFit, true);
             textOffset = 104f;
         }
 
         if (finished)
         {
-            GUI.Label(
-                new Rect(x + textOffset, 36f, bannerWidth - textOffset - 22f, 28f),
-                "DAY COMPLETE",
-                centerTitleStyle
-            );
-            GUI.Label(
-                new Rect(x + textOffset, 70f, bannerWidth - textOffset - 22f, 24f),
-                "All customers checked out",
-                centerLabelStyle
-            );
+            GUI.Label(new Rect(x + textOffset, 36f, bannerWidth - textOffset - 22f, 28f), "DAY COMPLETE", centerTitleStyle);
+            GUI.Label(new Rect(x + textOffset, 70f, bannerWidth - textOffset - 22f, 24f), "All customers checked out", centerLabelStyle);
             return;
         }
 
         int served = director != null ? director.GetCompletedCustomers() : 0;
         int total = director != null ? director.totalCustomers : 0;
         GUI.Label(new Rect(x + 28f, 36f, bannerWidth - 50f, 28f), "STORE OPEN", centerTitleStyle);
-        GUI.Label(
-            new Rect(x + 28f, 70f, bannerWidth - 50f, 24f),
-            "Checkout progress  " + served + "/" + total,
-            centerLabelStyle
-        );
+        GUI.Label(new Rect(x + 28f, 70f, bannerWidth - 50f, 24f), "Checkout progress  " + served + "/" + total, centerLabelStyle);
     }
 
     private void LoadDesignedArt()
@@ -197,18 +166,14 @@ public class Day01HUD : MonoBehaviour
         missionPanelArt = DesignedArtIntegration.GetTexture(catalog.missionPanel);
         coinArt = DesignedArtIntegration.GetTexture(catalog.coinIcon);
         coinStackArt = DesignedArtIntegration.GetTexture(catalog.coinStack);
-        playerPortraitArt = DesignedArtIntegration.GetTexture(
-            catalog.playerIdle != null ? catalog.playerIdle : catalog.player
-        );
-        productArt = DesignedArtIntegration.GetTexture(
-            catalog.colaBox != null ? catalog.colaBox : catalog.drinkBox
-        );
+        playerPortraitArt = DesignedArtIntegration.GetTexture(catalog.playerIdle != null ? catalog.playerIdle : catalog.player);
+        productArt = DesignedArtIntegration.GetTexture(catalog.colaBox != null ? catalog.colaBox : catalog.drinkBox);
         shelfArt = DesignedArtIntegration.GetTexture(catalog.drinkShelf);
     }
 
     private void BuildStyles()
     {
-        panelTexture = SolidTexture(new Color(0.06f, 0.09f, 0.12f, 0.88f));
+        panelTexture = SolidTexture(new Color(0.06f, 0.09f, 0.12f, 0.90f));
         accentTexture = SolidTexture(new Color(0.98f, 0.68f, 0.12f, 1f));
         progressBackTexture = SolidTexture(new Color(1f, 1f, 1f, 0.16f));
         progressFillTexture = SolidTexture(new Color(0.18f, 0.75f, 0.36f, 1f));
@@ -230,8 +195,8 @@ public class Day01HUD : MonoBehaviour
         moneyStyle.alignment = TextAnchor.MiddleRight;
 
         smallStyle = new GUIStyle(GUI.skin.label);
-        smallStyle.fontSize = 14;
-        smallStyle.normal.textColor = new Color(0.78f, 0.84f, 0.88f);
+        smallStyle.fontSize = 15;
+        smallStyle.normal.textColor = new Color(0.84f, 0.89f, 0.92f);
 
         centerTitleStyle = new GUIStyle(titleStyle);
         centerTitleStyle.alignment = TextAnchor.MiddleCenter;
