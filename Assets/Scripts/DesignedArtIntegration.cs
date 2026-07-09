@@ -107,9 +107,10 @@ public static class DesignedArtIntegration
             sprite,
             1.05f,
             new Vector3(0f, 0.47f, 0f),
-            true,
+            false,
             true
         );
+        FaceCameraOnce(target);
     }
 
     public static void ApplyCart(GameObject target)
@@ -121,9 +122,10 @@ public static class DesignedArtIntegration
             Catalog.shoppingCart,
             2.05f,
             new Vector3(0f, 0.95f, 0f),
-            true,
+            false,
             true
         );
+        FaceCameraOnce(target);
     }
 
     public static void ApplyShelf(GameObject target)
@@ -135,9 +137,10 @@ public static class DesignedArtIntegration
             Catalog.drinkShelf,
             3.45f,
             new Vector3(0f, 1.58f, 0f),
-            true,
+            false,
             true
         );
+        FaceCameraOnce(target);
     }
 
     public static void ApplyCheckout(GameObject target)
@@ -149,9 +152,10 @@ public static class DesignedArtIntegration
             Catalog.checkoutCounter,
             2.55f,
             new Vector3(0f, 1.2f, 0f),
-            true,
+            false,
             true
         );
+        FaceCameraOnce(target);
     }
 
     public static GameObject CreateDecoration(
@@ -184,6 +188,9 @@ public static class DesignedArtIntegration
             false
         );
 
+        if (!faceCamera)
+            FaceCameraOnce(target);
+
         return target;
     }
 
@@ -195,10 +202,10 @@ public static class DesignedArtIntegration
                 "DesignedFridgeDoubleDrinks",
                 Catalog.fridgeDoubleDrinks,
                 position,
-                3.15f,
+                3.3f,
+                false,
                 true,
-                true,
-                new Vector3(1.2f, 3f, 2.8f)
+                new Vector3(1.4f, 3.1f, 2.5f)
             );
     }
 
@@ -210,8 +217,8 @@ public static class DesignedArtIntegration
                 "DesignedWarehouseCorner",
                 Catalog.warehouseCorner,
                 position,
-                3.35f,
-                true,
+                3.2f,
+                false,
                 false,
                 Vector3.zero
             );
@@ -225,10 +232,10 @@ public static class DesignedArtIntegration
                 "DesignedPalletBoxStack",
                 Catalog.palletBoxStack,
                 position,
-                1.8f,
+                1.65f,
+                false,
                 true,
-                true,
-                new Vector3(1.8f, 1.7f, 1.2f)
+                new Vector3(1.65f, 1.55f, 1.1f)
             );
     }
 
@@ -240,10 +247,10 @@ public static class DesignedArtIntegration
                 "DesignedPromoStand",
                 Catalog.promoStandSuperSale,
                 position,
-                2.25f,
+                2.05f,
+                false,
                 true,
-                true,
-                new Vector3(1.2f, 2.1f, 0.8f)
+                new Vector3(1.15f, 1.95f, 0.75f)
             );
     }
 
@@ -255,8 +262,8 @@ public static class DesignedArtIntegration
                 "DesignedPottedPlant",
                 Catalog.pottedPlantLarge,
                 position,
-                2.1f,
-                true,
+                1.75f,
+                false,
                 false,
                 Vector3.zero
             );
@@ -336,6 +343,20 @@ public static class DesignedArtIntegration
         rootObject.transform.localRotation = Quaternion.identity;
         rootObject.transform.localScale = Vector3.one;
         return rootObject.transform;
+    }
+
+    private static void FaceCameraOnce(GameObject target)
+    {
+        if (target == null) return;
+
+        Camera camera = Camera.main;
+        if (camera == null) return;
+
+        Vector3 direction = camera.transform.position - target.transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude < 0.001f) return;
+
+        target.transform.rotation = Quaternion.LookRotation(-direction.normalized, Vector3.up);
     }
 
     private static Material GetCutoutMaterial(Sprite sprite)
