@@ -1,13 +1,14 @@
 using UnityEngine;
 
 /// <summary>
-/// Lightweight sale feedback for WebGL/mobile. Watches the existing economy
-/// totals and shows a floating income popup near the checkout.
+/// Lightweight sale feedback for WebGL/mobile. Watches existing economy totals
+/// and shows a floating income popup in the visible checkout area.
 /// </summary>
 public class Day01SaleFeedback : MonoBehaviour
 {
     public Camera gameplayCamera;
     public Transform checkoutAnchor;
+    public Day01ScreenPresentation presentation;
     public float popupSeconds = 1.15f;
 
     private int lastIncome;
@@ -46,29 +47,37 @@ public class Day01SaleFeedback : MonoBehaviour
 
     void OnGUI()
     {
-        if (popupTimer <= 0f || popupAmount <= 0 || gameplayCamera == null || checkoutAnchor == null)
+        if (popupTimer <= 0f || popupAmount <= 0)
             return;
 
         if (popupStyle == null)
             BuildStyle();
 
-        Vector3 world = checkoutAnchor.position + new Vector3(0f, 2.8f, 0f);
-        Vector3 screen = gameplayCamera.WorldToScreenPoint(world);
-        if (screen.z <= 0f) return;
+        Vector2 anchor;
+        if (presentation != null)
+        {
+            Rect play = presentation.PlayRect;
+            anchor = new Vector2(
+                play.x + play.width * 0.84f,
+                play.y + play.height * 0.58f
+            );
+        }
+        else
+        {
+            if (gameplayCamera == null || checkoutAnchor == null) return;
+            Vector3 screen = gameplayCamera.WorldToScreenPoint(checkoutAnchor.position + new Vector3(0f, 2.8f, 0f));
+            if (screen.z <= 0f) return;
+            anchor = new Vector2(screen.x, Screen.height - screen.y);
+        }
 
         float progress = 1f - Mathf.Clamp01(popupTimer / Mathf.Max(0.01f, popupSeconds));
-        float yLift = progress * 46f;
+        float yLift = progress * 52f;
         float alpha = 1f - Mathf.Clamp01((progress - 0.55f) / 0.45f);
 
         Color old = GUI.color;
         GUI.color = new Color(1f, 1f, 1f, alpha);
 
-        Rect rect = new Rect(
-            screen.x - 80f,
-            Screen.height - screen.y - 28f - yLift,
-            160f,
-            48f
-        );
+        Rect rect = new Rect(anchor.x - 80f, anchor.y - 28f - yLift, 160f, 48f);
         GUI.Label(rect, "+$" + popupAmount, popupStyle);
         GUI.color = old;
     }
