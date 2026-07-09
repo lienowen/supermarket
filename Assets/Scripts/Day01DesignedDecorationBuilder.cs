@@ -10,61 +10,51 @@ public static class Day01DesignedDecorationBuilder
         GameObject root = new GameObject("DesignedDay01Decorations");
         int created = 0;
 
+        // One hero fridge is enough. The previous two billboard fridges competed with the
+        // checkout area and made the scene look like a pile of rotating cards.
         if (catalog.fridgeDoubleDrinks != null)
         {
             DisableProceduralFridgeBank();
 
-            GameObject fridgeA = DesignedArtIntegration.CreateFridgeDecoration(
-                new Vector3(9.75f, 0f, -4.6f)
+            GameObject fridge = DesignedArtIntegration.CreateFridgeDecoration(
+                new Vector3(9.55f, 0f, -2.85f)
             );
-            GameObject fridgeB = DesignedArtIntegration.CreateFridgeDecoration(
-                new Vector3(9.75f, 0f, -0.8f)
-            );
-
-            created += ParentIfValid(fridgeA, root.transform);
-            created += ParentIfValid(fridgeB, root.transform);
+            created += ParentIfValid(fridge, root.transform);
         }
 
+        // Keep the warehouse corner as a single background anchor.
         if (catalog.warehouseCorner != null)
         {
             GameObject warehouse = DesignedArtIntegration.CreateWarehouseCornerDecoration(
-                new Vector3(-7.0f, 0f, -6.55f)
+                new Vector3(-7.4f, 0f, -6.35f)
             );
             created += ParentIfValid(warehouse, root.transform);
         }
 
+        // Only one pallet stack; duplicate stacks were blocking the player's visual path.
         if (catalog.palletBoxStack != null)
         {
-            GameObject palletA = DesignedArtIntegration.CreatePalletStackDecoration(
-                new Vector3(-4.7f, 0f, -5.7f)
+            GameObject pallet = DesignedArtIntegration.CreatePalletStackDecoration(
+                new Vector3(-9.35f, 0f, -3.25f)
             );
-            GameObject palletB = DesignedArtIntegration.CreatePalletStackDecoration(
-                new Vector3(-9.8f, 0f, -1.1f)
-            );
-
-            created += ParentIfValid(palletA, root.transform);
-            created += ParentIfValid(palletB, root.transform);
+            created += ParentIfValid(pallet, root.transform);
         }
 
         if (catalog.promoStandSuperSale != null)
         {
             GameObject promo = DesignedArtIntegration.CreatePromoStandDecoration(
-                new Vector3(6.7f, 0f, 0.9f)
+                new Vector3(6.65f, 0f, 0.45f)
             );
             created += ParentIfValid(promo, root.transform);
         }
 
+        // One plant near the entrance. A second mirrored plant added noise without gameplay value.
         if (catalog.pottedPlantLarge != null)
         {
-            GameObject plantA = DesignedArtIntegration.CreatePlantDecoration(
-                new Vector3(9.0f, 0f, 6.45f)
+            GameObject plant = DesignedArtIntegration.CreatePlantDecoration(
+                new Vector3(-10.2f, 0f, 6.55f)
             );
-            GameObject plantB = DesignedArtIntegration.CreatePlantDecoration(
-                new Vector3(-10.25f, 0f, 6.7f)
-            );
-
-            created += ParentIfValid(plantA, root.transform);
-            created += ParentIfValid(plantB, root.transform);
+            created += ParentIfValid(plant, root.transform);
         }
 
         if (created == 0)
@@ -75,8 +65,8 @@ public static class Day01DesignedDecorationBuilder
         }
 
         Debug.Log(
-            "Day01DesignedDecorationBuilder: spawned " + created +
-            " existing cutout decorations from Assets/Art."
+            "Day01DesignedDecorationBuilder: clean layout spawned " + created +
+            " fixed world decorations from Assets/Art."
         );
         return created;
     }
