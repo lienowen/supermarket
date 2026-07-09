@@ -10,6 +10,23 @@ public class SaveSystem : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    public void SaveEconomy()
+    {
+        if(EconomySystem.Instance == null) return;
+
+        PlayerPrefs.SetInt("Coin", EconomySystem.Instance.money);
+        PlayerPrefs.SetInt("Income", EconomySystem.Instance.totalIncome);
+        PlayerPrefs.Save();
+    }
+
+    public void LoadEconomy()
+    {
+        if(EconomySystem.Instance == null) return;
+
+        EconomySystem.Instance.money = PlayerPrefs.GetInt("Coin", 1000);
+        EconomySystem.Instance.totalIncome = PlayerPrefs.GetInt("Income", 0);
+    }
+
     public int GetDay()
     {
         return PlayerPrefs.GetInt("Day", 1);
