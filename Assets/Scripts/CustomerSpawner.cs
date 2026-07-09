@@ -58,11 +58,19 @@ public class CustomerSpawner : MonoBehaviour
 
         life.onLeave += RemoveCustomer;
 
-        Renderer renderer = customer.GetComponentInChildren<Renderer>();
-        if (renderer != null && customerPrefab == null)
+        if (customerPrefab == null)
         {
-            float hue = (spawnedSequence * 0.17f) % 1f;
-            renderer.material.color = Color.HSVToRGB(hue, 0.55f, 0.95f);
+            ArtVisualFactory.ApplyCustomer(customer, spawnedSequence - 1);
+
+            if (!ArtVisualFactory.HasCatalog())
+            {
+                Renderer renderer = customer.GetComponentInChildren<Renderer>();
+                if (renderer != null)
+                {
+                    float hue = (spawnedSequence * 0.17f) % 1f;
+                    renderer.material.color = Color.HSVToRGB(hue, 0.55f, 0.95f);
+                }
+            }
         }
 
         return customer;
