@@ -40,49 +40,45 @@ public static class Day01AutoInstaller
         day.StartDay();
         state.StartGame();
 
-        Day01EnvironmentLayout layout = Day01EnvironmentBuilder.Build();
+        Day01EnvironmentLayout layout = Day01StaticStageBuilder.Build();
         Camera gameplayCamera = ConfigureFixedCamera();
 
         for (int i = 0; i < 6; i++)
         {
             int column = i % 3;
             int row = i / 3;
-            Vector3 position = layout.boxOrigin + new Vector3(column * 1.02f, 0f, row * 0.9f);
+            Vector3 position = layout.boxOrigin + new Vector3(column * 1.05f, 0f, row * 0.92f);
 
             GameObject box = CreateColliderRoot(
                 "DrinkBox_" + (i + 1),
                 position,
-                new Vector3(0.86f, 0.7f, 0.7f),
-                new Vector3(0f, 0.35f, 0f)
+                new Vector3(0.92f, 0.78f, 0.78f),
+                new Vector3(0f, 0.39f, 0f)
             );
 
             ProductBox product = box.AddComponent<ProductBox>();
             product.productId = "cola_box";
-
-            Procedural3DVisualFactory.ApplyDrinkBox(box);
             DesignedArtIntegration.ApplyProduct(box, product.productId);
         }
 
         GameObject cartObject = CreateColliderRoot(
             "ShoppingCart",
             layout.cartPosition,
-            new Vector3(1.25f, 1.9f, 1f),
-            new Vector3(0f, 0.95f, 0f)
+            new Vector3(1.55f, 2.05f, 1.35f),
+            new Vector3(0f, 1f, 0f)
         );
         CartSystem cart = cartObject.AddComponent<CartSystem>();
-        Procedural3DVisualFactory.ApplyCart(cartObject);
         DesignedArtIntegration.ApplyCart(cartObject);
 
         GameObject shelfObject = CreateColliderRoot(
             "DrinkShelf",
             layout.shelfPosition,
-            new Vector3(2.2f, 3.2f, 1f),
-            new Vector3(0f, 1.6f, 0f)
+            new Vector3(2.55f, 3.45f, 1.25f),
+            new Vector3(0f, 1.72f, 0f)
         );
         ShelfSystem shelf = shelfObject.AddComponent<ShelfSystem>();
         shelf.capacity = 6;
         shelf.category = "drink";
-        Procedural3DVisualFactory.ApplyShelf(shelfObject);
         DesignedArtIntegration.ApplyShelf(shelfObject);
 
         Transform customerSpawn = CreatePoint("CustomerSpawn", layout.customerSpawn);
@@ -93,10 +89,9 @@ public static class Day01AutoInstaller
         GameObject checkout = CreateColliderRoot(
             "CheckoutCounter",
             layout.checkoutPosition,
-            new Vector3(2.5f, 2.9f, 1.2f),
-            new Vector3(0f, 1.45f, 0f)
+            new Vector3(2.8f, 3.1f, 1.4f),
+            new Vector3(0f, 1.5f, 0f)
         );
-        Procedural3DVisualFactory.ApplyCheckout(checkout);
         DesignedArtIntegration.ApplyCheckout(checkout);
 
         CheckoutQueueSystem checkoutQueue = checkout.AddComponent<CheckoutQueueSystem>();
@@ -138,8 +133,7 @@ public static class Day01AutoInstaller
         hud.tapFlow = tapFlow;
 
         Debug.Log(
-            "Day01AutoInstaller: fixed-camera tap flow active. " +
-            "Third-person WASD interaction disabled for Day01. " +
+            "Day01AutoInstaller: static stage + tap flow active. " +
             DesignedArtIntegration.GetBindingSummary()
         );
     }
@@ -164,14 +158,14 @@ public static class Day01AutoInstaller
             oldRig.enabled = false;
 
         main.orthographic = true;
-        main.orthographicSize = 10.4f;
+        main.orthographicSize = 10.2f;
         main.nearClipPlane = 0.1f;
         main.farClipPlane = 200f;
         main.clearFlags = CameraClearFlags.SolidColor;
         main.backgroundColor = new Color(0.12f, 0.16f, 0.18f);
 
-        Vector3 focus = new Vector3(0f, 0.7f, 0.2f);
-        main.transform.position = new Vector3(0f, 15.5f, -16.5f);
+        Vector3 focus = new Vector3(0f, 0.8f, 0.3f);
+        main.transform.position = new Vector3(0f, 15.8f, -16.8f);
         main.transform.LookAt(focus);
 
         return main;
