@@ -64,7 +64,14 @@ public class CustomerSpawner : MonoBehaviour
         life.onLeave += RemoveCustomer;
 
         if (customerPrefab == null)
-            Procedural3DVisualFactory.ApplyCustomer(customer, spawnedSequence - 1);
+        {
+            int visualIndex = spawnedSequence - 1;
+            Procedural3DVisualFactory.ApplyCustomer(customer, visualIndex);
+
+            // Prefer the designed customer cutouts when available. The collider and AI remain
+            // fully 3D/gameplay-driven; only the ugly programmer block model is hidden.
+            DesignedCharacterVisual.ApplyCustomer(customer, visualIndex);
+        }
 
         return customer;
     }
