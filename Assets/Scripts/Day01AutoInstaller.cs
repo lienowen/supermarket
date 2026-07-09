@@ -161,7 +161,10 @@ public static class Day01AutoInstaller
         carryPoint.transform.localPosition = new Vector3(0f, 1.28f, 0.82f);
         carry.carryPoint = carryPoint.transform;
 
+        // Keep the procedural model only as a fallback. When player art exists the designed
+        // character controller hides the block model but preserves movement/collision/gameplay.
         Procedural3DVisualFactory.ApplyPlayer(player);
+        DesignedCharacterVisual.ApplyPlayer(player);
         return player;
     }
 
