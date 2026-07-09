@@ -40,8 +40,8 @@ public static class Day01AutoInstaller
         day.StartDay();
         state.StartGame();
 
-        Day01EnvironmentLayout layout = Day01StaticStageBuilder.Build();
         Camera gameplayCamera = ConfigureFixedCamera();
+        Day01EnvironmentLayout layout = Day01StaticStageBuilder.Build();
 
         for (int i = 0; i < 6; i++)
         {
