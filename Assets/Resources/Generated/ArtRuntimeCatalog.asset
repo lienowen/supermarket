@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b10c24cf8fad5c4fb34efab7ce42f94, type: 3}
+  m_Name: ArtRuntimeCatalog
+  m_EditorClassIdentifier: 
+  player: {fileID: 21300000, guid: 8a9153dbd719bf142a98c57859bcf500, type: 3}
+  customers:
+  - {fileID: 21300000, guid: a71448e75c375e24cae6ee76680c47bd, type: 3}
+  - {fileID: 21300000, guid: aa32cdd196fb2d34f8cfea9adb4b12c6, type: 3}
+  - {fileID: 21300000, guid: bffd3ae9289647f40a790ce6e1f3c9bf, type: 3}
+  - {fileID: 21300000, guid: d97cd49a3040fbf488de418961246717, type: 3}
+  - {fileID: 21300000, guid: 1e9e867b98ff1884f8ef3261de843fa1, type: 3}
+  drinkBox: {fileID: 21300000, guid: 56ae97f120538fc469f102797206b2a7, type: 3}
+  shoppingCart: {fileID: 21300000, guid: 7b1ae77db3010dc4c9c4ae091805e307, type: 3}
+  drinkShelf: {fileID: 21300000, guid: 0cd6b1968d5c3784ea25433f15d12474, type: 3}
+  checkoutCounter: {fileID: 21300000, guid: df2fbc3a0b7233b418f9e41b993e9e67, type: 3}
+  warehouseWall: {fileID: 21300000, guid: a50bae02158e9c24fb001cf699c96f7f, type: 3}
+  floor: {fileID: 21300000, guid: 1eb39505f619c3f4ab6b56a8ff465f16, type: 3}
