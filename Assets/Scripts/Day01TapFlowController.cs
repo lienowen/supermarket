@@ -35,6 +35,7 @@ public class Day01TapFlowController : MonoBehaviour
     private Vector3 flyEnd;
     private Vector3 flyStartScale;
     private float flyTimer;
+    private int flyingRestockSlotIndex = -1;
 
     enum FlyAction
     {
@@ -124,11 +125,16 @@ public class Day01TapFlowController : MonoBehaviour
                 return;
             }
 
-            if (presentation.HitShelf(screenPosition))
+            if (presentation.TryGetMissingShelfSlotAt(screenPosition, out int shelfSlotIndex))
             {
-                HandleShelfTap(shelf);
+                HandleShelfTap(shelf, shelfSlotIndex);
                 return;
             }
+
+            // The whole shelf is no longer a restock button. Filled slots and shelf chrome
+            // deliberately ignore taps so the player must target a visible missing slot.
+            if (presentation.HitShelf(screenPosition))
+                return;
         }
 
         // Fallback for editor scenes that do not attach the screen presentation.
@@ -152,7 +158,7 @@ public class Day01TapFlowController : MonoBehaviour
 
         ShelfSystem tappedShelf = hit.collider.GetComponentInParent<ShelfSystem>();
         if (tappedShelf != null)
-            HandleShelfTap(tappedShelf);
+            HandleShelfTap(tappedShelf, -1);
     }
 
     void SelectBox(ProductBox box)
@@ -174,7 +180,7 @@ public class Day01TapFlowController : MonoBehaviour
         {
             ProductBox box = selectedBox;
             ClearSelectionVisual();
-            BeginFly(box, GetCartLoadPoint(), FlyAction.LoadCart);
+            BeginFly(box, GetCartLoadPoint(), FlyAction.LoadCart, -1);
             return;
         }
 
@@ -187,23 +193,25 @@ public class Day01TapFlowController : MonoBehaviour
         movingCart = true;
     }
 
-    void HandleShelfTap(ShelfSystem tappedShelf)
+    void HandleShelfTap(ShelfSystem tappedShelf, int slotIndex)
     {
         if (tappedShelf == null || tappedShelf != shelf || !cartAtShelf || cart == null) return;
+        if (tappedShelf.currentCount >= tappedShelf.capacity) return;
 
         ProductBox product = cart.RemoveOneProduct();
         if (product == null) return;
 
         product.gameObject.SetActive(true);
-        BeginFly(product, GetShelfDropPoint(), FlyAction.RestockShelf);
+        BeginFly(product, GetShelfDropPoint(slotIndex), FlyAction.RestockShelf, slotIndex);
     }
 
-    void BeginFly(ProductBox box, Vector3 target, FlyAction action)
+    void BeginFly(ProductBox box, Vector3 target, FlyAction action, int restockSlotIndex)
     {
         if (box == null) return;
 
         flyingBox = box;
         flyAction = action;
+        flyingRestockSlotIndex = action == FlyAction.RestockShelf ? restockSlotIndex : -1;
         flyStart = box.transform.position;
         flyEnd = target;
         flyStartScale = box.transform.localScale;
@@ -232,8 +240,10 @@ public class Day01TapFlowController : MonoBehaviour
 
         ProductBox completed = flyingBox;
         FlyAction completedAction = flyAction;
+        int completedSlotIndex = flyingRestockSlotIndex;
         flyingBox = null;
         flyAction = FlyAction.None;
+        flyingRestockSlotIndex = -1;
         completed.transform.position = flyEnd;
         completed.transform.localScale = flyStartScale;
 
@@ -248,7 +258,11 @@ public class Day01TapFlowController : MonoBehaviour
         }
 
         if (completedAction == FlyAction.RestockShelf)
-            shelf.Restock(completed);
+        {
+            bool restocked = shelf != null && shelf.Restock(completed);
+            if (restocked && presentation != null && completedSlotIndex >= 0)
+                presentation.MarkShelfSlotRestocked(completedSlotIndex);
+        }
     }
 
     void UpdateCartMovement()
@@ -271,12 +285,15 @@ public class Day01TapFlowController : MonoBehaviour
         return cart.transform.position + new Vector3(0f, 1.0f + count * 0.12f, 0f);
     }
 
-    Vector3 GetShelfDropPoint()
+    Vector3 GetShelfDropPoint(int slotIndex)
     {
         if (shelf == null) return Vector3.zero;
-        int count = shelf.currentCount;
-        float x = ((count % 3) - 1) * 0.42f;
-        float y = 0.9f + (count / 3) * 0.52f;
+
+        int visualIndex = slotIndex >= 0 ? slotIndex : shelf.currentCount;
+        int col = visualIndex % 3;
+        int row = visualIndex / 3;
+        float x = (col - 1) * 0.42f;
+        float y = 0.9f + row * 0.52f;
         return shelf.transform.position + new Vector3(x, y, -0.35f);
     }
 
