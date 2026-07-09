@@ -5,15 +5,25 @@ public class CustomerShoppingSystem : MonoBehaviour
     public string targetProduct = "cola_box";
     public bool bought;
 
-    public void BuyProduct()
+    public bool BuyProduct()
     {
-        if(bought) return;
+        if (bought) return true;
 
-        bought = true;
+        ProductData product = ProductDatabase.Instance != null
+            ? ProductDatabase.Instance.GetProduct(targetProduct)
+            : null;
 
-        if(EconomySystem.Instance != null)
+        ShelfSystem[] shelves = FindObjectsOfType<ShelfSystem>();
+        foreach (ShelfSystem shelf in shelves)
         {
-            EconomySystem.Instance.AddIncome(10);
+            if (shelf == null || shelf.currentCount <= 0) continue;
+            if (product != null && shelf.category != product.category) continue;
+
+            shelf.currentCount--;
+            bought = true;
+            return true;
         }
+
+        return false;
     }
 }
